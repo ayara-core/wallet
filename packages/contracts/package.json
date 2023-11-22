@@ -1,0 +1,43 @@
+{
+    "name": "packs-contracts",
+    "version": "0.0.1",
+    "description": "Packs contracts",
+    "main": "index.js",
+    "author": "PACKD",
+    "license": "MIT",
+    "scripts": {
+        "start": "hardhat node",
+        "start:dev": "concurrently -c \"auto\"  \"yarn start\" \"yarn task deploy-dev-env\"",
+        "start:deploy-env": "yarn task deploy-dev-env --network localhost",
+        "test": "hardhat test",
+        "deploy": "hardhat typechain && hardhat deploy",
+        "verify": "hardhat verify",
+        "format": "prettier --write \"./contracts/**/*.sol\" --plugin prettier-plugin-solidity && prettier --write \"./**/*.ts\"",
+        "task": "yarn hardhat"
+    },
+    "devDependencies": {
+        "@nomicfoundation/hardhat-chai-matchers": "^2.0.2",
+        "@nomicfoundation/hardhat-ethers": "^3.0.5",
+        "@nomicfoundation/hardhat-network-helpers": "^1.0.9",
+        "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+        "@nomicfoundation/hardhat-verify": "^2.0.1",
+        "@openzeppelin/contracts": "^5.0.0",
+        "@typechain/ethers-v6": "^0.5.1",
+        "@typechain/hardhat": "^9.1.0",
+        "@types/chai": "^4.3.11",
+        "@wagmi/cli": "^1.5.2",
+        "chai": "^4.3.10",
+        "concurrently": "^8.2.2",
+        "ethers": "^6.8.1",
+        "hardhat": "^2.19.1",
+        "hardhat-gas-reporter": "^1.0.9",
+        "prettier": "^3.1.0",
+        "prettier-plugin-solidity": "^1.2.0",
+        "solidity-coverage": "^0.8.5",
+        "typechain": "^8.3.2"
+    },
+    "dependencies": {
+        "debug": "^4.3.4",
+        "dotenv": "^16.3.1"
+    }
+}
