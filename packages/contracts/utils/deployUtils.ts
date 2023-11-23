@@ -29,7 +29,7 @@ interface DeployCreate2Options {
   waitForBlocks?: number | undefined;
 }
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const logger = (...args: string[]) => debug(`packd:${args.join(":")}`);
+export const logger = (...args: string[]) => debug(`Ayara:${args.join(":")}`);
 
 const log = logger("log", "deploy");
 
@@ -56,13 +56,6 @@ export const deployContract = async <T extends BaseContract>(
     return contract;
   }
 
-  // If Mantle testnet, set gas limit to 0x1000000 (workaround)
-  if (hre.network.name === "mantleTestnet") {
-    overrides = {
-      gasLimit: "0x1000000",
-    };
-  }
-
   const contract = (await contractInstance.deploy(
     ...constructorArguments,
     overrides
@@ -75,13 +68,7 @@ export const deployContract = async <T extends BaseContract>(
   await saveAddress(hre, contract, contractName);
 
   // Verify the contract on Etherscan if not local network
-  if (
-    hre.network.name !== "hardhat" &&
-    hre.network.name !== "localhost"
-    // hre.network.name !== "scrollSepolia" &&
-    // hre.network.name !== "polygonZkEVMTestnet"
-    // hre.network.name !== "mantleTestnet"
-  ) {
+  if (hre.network.name !== "hardhat" && hre.network.name !== "localhost") {
     await hre.run("verify:verify", {
       address: await contract.getAddress(),
       constructorArguments: [...constructorArguments],
@@ -118,24 +105,21 @@ export const deployContractWithCreate2 = async <
   log("deployContractWithCreate2", contractName, "salt", salt);
 
   const deployerAddress = await resolveAddress(create2Factory.target);
+
   const unsignedTx = await contractFactory.getDeployTransaction(
     ...constructorArgs,
     overrides ?? {}
   );
 
   const create2Salt = solidityPackedKeccak256(["string"], [salt]);
+
   const contractAddress = _computeCreate2Address(
     deployerAddress,
     create2Salt,
     unsignedTx.data
   );
 
-  if (hre.network.name === "mantleTestnet") {
-    overrides = {
-      ...overrides,
-      gasLimit: "0x1000000",
-    };
-  }
+  log(`Deploying ${contractName} to ${contractAddress}`);
 
   const deployTransaction = await create2Factory.deploy(
     create2Options?.amount ?? 0,
@@ -172,6 +156,7 @@ export const deployContractWithCreate2 = async <
   await saveAddress(hre, contract, contractName);
   return contract;
 };
+
 function _computeCreate2Address(
   deployerAddress: string,
   salt: string,

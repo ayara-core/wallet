@@ -4,11 +4,15 @@ import type { HardhatRuntimeEnvironment } from "hardhat/types";
 const DEFAULT_CHAIN_ID = 31337;
 
 export interface SystemConfig {
-  ayaraConfig: {};
+  ayaraConfig: {
+    salt: string;
+  };
 }
 
 export function getSystemConfig(hre: HardhatRuntimeEnvironment): SystemConfig {
-  const ayaraConfig = {};
+  const ayaraConfig = {
+    salt: hre.ethers.encodeBytes32String("ayara"),
+  };
 
   return { ayaraConfig };
 }
