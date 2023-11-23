@@ -97,7 +97,7 @@ describe("AyaraMain", function () {
         alice
       );
 
-      log(`aliceWalletAddress: ${aliceWalletAddress}`);
+      log(`walletAddress: ${walletAddress}`);
 
       // Check the storage properties
       expect(await walletInstance.VERSION()).to.equal(1);
@@ -144,6 +144,31 @@ describe("AyaraMain", function () {
       expect(bobWalletAddress).to.not.equal(ethers.ZeroAddress);
       expect(bobWalletAddress).to.be.properAddress;
       expect(bobWalletAddress).to.not.equal(bobAddress);
+    });
+    it("Should not create a new Wallet for Alice if she already has one", async function () {
+      const { ayaraController, alice } = await loadFixture(setup);
+      const ayaraControllerInstance = ayaraController.connect(alice);
+
+      const aliceAddress = await alice.getAddress();
+      log(`aliceAddress: ${aliceAddress}`);
+
+      const { walletAddress, walletInstance } = await createWalletAndGetAddress(
+        ayaraController,
+        alice
+      );
+
+      log(`walletAddress: ${walletAddress}`);
+
+      expect(walletAddress).to.not.equal(ethers.ZeroAddress);
+      expect(walletAddress).to.be.properAddress;
+      expect(walletAddress).to.not.equal(aliceAddress);
+
+      // Try to create a new wallet for Alice
+      const tx = ayaraControllerInstance.createWallet(aliceAddress, []);
+      await expect(tx).to.revertedWithCustomError(
+        ayaraControllerInstance,
+        "WalletAlreadyInitialized"
+      );
     });
     it("Should have different Wallet addresses for Alice and Bob", async function () {
       expect(aliceWalletAddress).to.not.equal(bobWalletAddress);
@@ -245,7 +270,7 @@ describe("AyaraMain", function () {
       expect(balanceWalletBefore).to.equal(ethers.parseEther("1000"));
       log(`balanceWallet: ${balanceWalletBefore}`);
 
-      // Try to send 500 ERC20 to Bob
+      // Try to send 1000 ERC20 to Bob
       const bobAddress = await bob.getAddress();
       const bobBalanceBefore = await erc20Mock.balanceOf(bobAddress);
       expect(bobBalanceBefore).to.equal(0);
@@ -282,7 +307,6 @@ describe("AyaraMain", function () {
         const { ayaraController, alice, bob, erc20Mock, relayer } =
           await loadFixture(setup);
 
-        const aliceAddress = await alice.getAddress();
         const { walletAddress: aliceWalletAddress } =
           await createWalletAndGetAddress(ayaraController, alice);
 
@@ -338,6 +362,7 @@ describe("AyaraMain", function () {
         );
         await tx3.wait();
       });
+      it("Should not send ERC20 if the signature is invalid", async function () {});
     });
   });
 });

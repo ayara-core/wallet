@@ -59,6 +59,16 @@
     ]
   },
   {
+    "type": "error",
+    "name": "WalletAlreadyInitialized",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "wallet"
+      }
+    ]
+  },
+  {
     "type": "event",
     "anonymous": false,
     "name": "Deployed",

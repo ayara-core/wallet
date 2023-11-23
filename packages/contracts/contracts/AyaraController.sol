@@ -7,6 +7,8 @@ import "./AyaraWalletInstance.sol";
 import "./lib/Create2Factory.sol";
 
 contract AyaraController is Create2Factory, Ownable {
+    error WalletAlreadyInitialized(address wallet);
+
     uint256 public constant VERSION = 1;
     bytes32 public immutable salt;
 
@@ -22,13 +24,24 @@ contract AyaraController is Create2Factory, Ownable {
         address owner,
         bytes[] calldata callbacks
     ) external returns (address) {
+        // Check if wallet already exists
+        if (wallets[owner] != address(0))
+            revert WalletAlreadyInitialized(wallets[owner]);
+
+        // Get bytecode
         bytes memory bytecode = type(AyaraWalletInstance).creationCode;
         bytes memory encodedArgs = abi.encode(owner, address(this));
         bytes memory finalBytecode = abi.encodePacked(bytecode, encodedArgs);
+
+        // Deploy contract
         address deployedAddress = deploy(0, salt, finalBytecode, callbacks);
 
+        // Save wallet address
         wallets[owner] = deployedAddress;
+
+        // Emit event
         emit WalletCreated(owner, deployedAddress);
+
         return deployedAddress;
     }
 }
