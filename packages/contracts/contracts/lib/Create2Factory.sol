@@ -12,12 +12,12 @@ contract Create2Factory {
 
     receive() external payable {}
 
-    function _deploy(
+    function deploy(
         uint256 amount,
         bytes32 salt,
         bytes memory bytecode,
         bytes[] calldata callbacks
-    ) internal returns (address) {
+    ) public returns (address) {
         address deployedAddress = Create2.deploy(amount, salt, bytecode);
         uint256 len = callbacks.length;
         if (len > 0) {

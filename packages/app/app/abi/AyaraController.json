@@ -1,0 +1,273 @@
+[
+  {
+    "type": "constructor",
+    "stateMutability": "undefined",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "proxyAdmin_"
+      },
+      {
+        "type": "uint256",
+        "name": "salt_"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Create2EmptyBytecode",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "Create2FailedDeployment",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "Create2InsufficientBalance",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "balance"
+      },
+      {
+        "type": "uint256",
+        "name": "needed"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "OwnableInvalidOwner",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "OwnableUnauthorizedAccount",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "account"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "Deployed",
+    "inputs": [
+      {
+        "type": "bytes32",
+        "name": "salt",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "deployed",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "OwnershipTransferred",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "previousOwner",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "newOwner",
+        "indexed": true
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "WalletCreated",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "wallet",
+        "indexed": true
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "VERSION",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "computeAddress",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "bytes32",
+        "name": "salt"
+      },
+      {
+        "type": "bytes32",
+        "name": "codeHash"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "createWallet",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner"
+      },
+      {
+        "type": "bytes[]",
+        "name": "callbacks"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "deploy",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "amount"
+      },
+      {
+        "type": "bytes32",
+        "name": "salt"
+      },
+      {
+        "type": "bytes",
+        "name": "bytecode"
+      },
+      {
+        "type": "bytes[]",
+        "name": "callbacks"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "owner",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "renounceOwnership",
+    "constant": false,
+    "payable": false,
+    "inputs": [],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "salt",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "bytes32",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "transferOwnership",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "newOwner"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "wallets",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ],
+    "outputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "receive",
+    "stateMutability": "payable"
+  }
+]

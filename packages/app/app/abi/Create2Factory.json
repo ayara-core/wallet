@@ -1,0 +1,100 @@
+[
+  {
+    "type": "error",
+    "name": "Create2EmptyBytecode",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "Create2FailedDeployment",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "Create2InsufficientBalance",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "balance"
+      },
+      {
+        "type": "uint256",
+        "name": "needed"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "Deployed",
+    "inputs": [
+      {
+        "type": "bytes32",
+        "name": "salt",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "deployed",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "computeAddress",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "bytes32",
+        "name": "salt"
+      },
+      {
+        "type": "bytes32",
+        "name": "codeHash"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "deploy",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "amount"
+      },
+      {
+        "type": "bytes32",
+        "name": "salt"
+      },
+      {
+        "type": "bytes",
+        "name": "bytecode"
+      },
+      {
+        "type": "bytes[]",
+        "name": "callbacks"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "receive",
+    "stateMutability": "payable"
+  }
+]
