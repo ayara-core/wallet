@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
+/**
+ * @title AyaraWalletInstance
+ * @dev This contract is a wallet instance that supports execution of arbitrary calls.
+ */
 contract AyaraWalletInstance {
     error InvalidZeroAddress();
     error InsufficientBalance(uint256 balance, uint256 value);
@@ -14,46 +17,51 @@ contract AyaraWalletInstance {
 
     uint256 public constant VERSION = 1;
 
-    address public immutable addressOwner;
-    address public immutable controller;
+    address public immutable ownerAddress;
+    address public immutable controllerAddress;
     uint256 public nonce;
 
     receive() external payable {}
 
-    constructor(address addressOwner_, address controller_) {
-        addressOwner = addressOwner_;
-        controller = controller_;
+    /**
+     * @dev Initializes the contract setting the owner and controller addresses.
+     */
+    constructor(address ownerAddress_, address controllerAddress_) {
+        ownerAddress = ownerAddress_;
+        controllerAddress = controllerAddress_;
         nonce = 0;
     }
 
+    /**
+     * @dev Modifier that checks if the sender is the owner or has a valid signature.
+     */
     modifier onlyOwnerOrValidSignature(
         bytes memory signature,
         bytes memory data
     ) {
-        if (msg.sender == addressOwner) {
+        if (msg.sender == ownerAddress) {
             _;
         } else {
             // TODO: ADD CHAIN ID!
             bytes32 hash = MessageHashUtils.toEthSignedMessageHash(
-                keccak256(
-                    abi.encodePacked(addressOwner, controller, nonce, data)
-                )
+                abi.encodePacked(ownerAddress, controllerAddress, nonce, data)
             );
 
             if (
                 !SignatureChecker.isValidSignatureNow(
-                    addressOwner,
+                    ownerAddress,
                     hash,
                     signature
                 )
-            ) {
-                revert InvalidSignature();
-            }
+            ) revert InvalidSignature();
 
             _;
         }
     }
 
+    /**
+     * @dev Executes an arbitrary call.
+     */
     function execute(
         address to,
         uint256 value,
@@ -71,6 +79,9 @@ contract AyaraWalletInstance {
         return _execute(to, value, data);
     }
 
+    /**
+     * @dev Internal function to execute a call.
+     */
     function _execute(
         address to,
         uint256 value,

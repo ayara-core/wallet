@@ -6,7 +6,7 @@ module.exports = {
   bracketSpacing: true,
   arrowParens: "always",
   bracketSameLine: false,
-  printWidth: 80,
+  printWidth: 100,
   useTabs: false,
   quoteProps: "as-needed",
   overrides: [

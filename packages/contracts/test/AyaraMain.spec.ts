@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import hre, { ethers } from "hardhat";
-import { EventLog } from "ethers";
+import { EventLog, Contract, Signer, Log } from "ethers";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 
 import { getSystemConfig } from "../utils/deployConfig";
@@ -8,9 +8,40 @@ import { deploySystem } from "../scripts/deploy";
 import { getCommonSigners } from "../utils/signers";
 import { logger } from "../utils/deployUtils";
 
+import { AyaraWalletInstance, AyaraController } from "../typechain-types";
+
+// Initialize logger for test logs
 const log = logger("log", "test");
 
+// Load system configuration
 const systemConfig = getSystemConfig(hre);
+
+// Helper functions
+async function createWalletAndGetAddress(
+  controller: AyaraController,
+  signer: Signer
+) {
+  const signerAddress = await signer.getAddress();
+  const controllerInstance = controller.connect(signer);
+  const tx = await controllerInstance.createWallet(signerAddress, []);
+  const receipt = await tx.wait();
+
+  const walletCreatedEvent = receipt?.logs?.find((e: EventLog | Log) => {
+    return e.topics[0] === ethers.id("WalletCreated(address,address)");
+  }) as EventLog;
+
+  let walletAddress = "";
+  if (walletCreatedEvent) {
+    walletAddress = walletCreatedEvent.args[1];
+  }
+
+  const walletInstance = await ethers.getContractAt(
+    "AyaraWalletInstance",
+    walletAddress
+  );
+
+  return { walletAddress, walletInstance };
+}
 
 describe("AyaraMain", function () {
   // This fixture deploys the contract and returns it
@@ -25,7 +56,7 @@ describe("AyaraMain", function () {
     return { alice, bob, deployer, relayer, ayaraController, erc20Mock };
   };
 
-  it("Should be deployed", async function () {
+  it("Should successfully deploy", async function () {
     const { ayaraController, deployer } = await loadFixture(setup);
     const ayaraControllerInstance = ayaraController.connect(deployer);
 
@@ -59,47 +90,35 @@ describe("AyaraMain", function () {
     });
     it("Should have the right contract and interface for the Wallet", async function () {
       const { ayaraController, alice } = await loadFixture(setup);
-      const ayaraControllerInstance = ayaraController.connect(alice);
 
       const aliceAddress = await alice.getAddress();
-      const tx = await ayaraControllerInstance.createWallet(aliceAddress, []);
-      const receipt = await tx.wait();
+      const { walletAddress, walletInstance } = await createWalletAndGetAddress(
+        ayaraController,
+        alice
+      );
 
-      // Query the Wallet address
-      const aliceWalletAddress =
-        await ayaraControllerInstance.wallets(aliceAddress);
       log(`aliceWalletAddress: ${aliceWalletAddress}`);
 
-      // Create smart contract instance
-      const ayaraWalletInstance = await ethers.getContractAt(
-        "AyaraWalletInstance",
-        aliceWalletAddress
-      );
-
       // Check the storage properties
-      expect(await ayaraWalletInstance.VERSION()).to.equal(1);
-      expect(await ayaraWalletInstance.addressOwner()).to.equal(aliceAddress);
-      expect(await ayaraWalletInstance.controller()).to.equal(
-        await ayaraControllerInstance.getAddress()
+      expect(await walletInstance.VERSION()).to.equal(1);
+      expect(await walletInstance.ownerAddress()).to.equal(aliceAddress);
+      expect(await walletInstance.controllerAddress()).to.equal(
+        await ayaraController.getAddress()
       );
-      expect(await ayaraWalletInstance.nonce()).to.equal(0);
+      expect(await walletInstance.nonce()).to.equal(0);
     });
     it("Should create a new Wallet for Alice", async function () {
       const { ayaraController, alice } = await loadFixture(setup);
-      const ayaraControllerInstance = ayaraController.connect(alice);
 
       const aliceAddress = await alice.getAddress();
       log(`aliceAddress: ${aliceAddress}`);
 
-      const tx = await ayaraControllerInstance.createWallet(aliceAddress, []);
-      const receipt = await tx.wait();
+      const { walletAddress, walletInstance } = await createWalletAndGetAddress(
+        ayaraController,
+        alice
+      );
 
-      const walletCreatedEvent = receipt?.logs?.find((e) => {
-        return e.topics[0] === ethers.id("WalletCreated(address,address)");
-      }) as EventLog;
-      if (walletCreatedEvent) {
-        aliceWalletAddress = walletCreatedEvent.args[1];
-      }
+      aliceWalletAddress = walletAddress;
 
       log(`aliceWalletAddress: ${aliceWalletAddress}`);
 
@@ -109,20 +128,16 @@ describe("AyaraMain", function () {
     });
     it("Should create a new Wallet for Bob", async function () {
       const { ayaraController, bob } = await loadFixture(setup);
-      const ayaraControllerInstance = ayaraController.connect(bob);
 
       const bobAddress = await bob.getAddress();
       log(`bobAddress: ${bobAddress}`);
 
-      const tx = await ayaraControllerInstance.createWallet(bobAddress, []);
-      const receipt = await tx.wait();
+      const { walletAddress, walletInstance } = await createWalletAndGetAddress(
+        ayaraController,
+        bob
+      );
 
-      const walletCreatedEvent = receipt?.logs?.find((e) => {
-        return e.topics[0] === ethers.id("WalletCreated(address,address)");
-      }) as EventLog;
-      if (walletCreatedEvent) {
-        bobWalletAddress = walletCreatedEvent.args[1];
-      }
+      bobWalletAddress = walletAddress;
 
       log(`bobWalletAddress: ${bobWalletAddress}`);
 
@@ -136,37 +151,16 @@ describe("AyaraMain", function () {
     it("Should have the same address for Alice and Bob regardless of order", async function () {
       // This time create Bob's wallet first
       const { ayaraController, alice, bob } = await loadFixture(setup);
-      const ayaraControllerInstance = ayaraController.connect(bob);
 
-      const bobAddress = await bob.getAddress();
-      const tx = await ayaraControllerInstance.createWallet(bobAddress, []);
-      const receipt = await tx.wait();
-
-      const walletCreatedEvent = receipt?.logs?.find((e) => {
-        return e.topics[0] === ethers.id("WalletCreated(address,address)");
-      }) as EventLog;
-
-      let bobWalletAddressSecond: string = "";
-      if (walletCreatedEvent) {
-        bobWalletAddressSecond = walletCreatedEvent.args[1];
-      }
+      const { walletAddress: bobWalletAddressSecond } =
+        await createWalletAndGetAddress(ayaraController, bob);
 
       log(`bobWalletAddressSecond: ${bobWalletAddressSecond}`);
       expect(bobWalletAddressSecond).to.equal(bobWalletAddress);
 
       // Now create Alice's wallet
-      const aliceAddress = await alice.getAddress();
-      const tx2 = await ayaraControllerInstance.createWallet(aliceAddress, []);
-      const receipt2 = await tx2.wait();
-
-      const walletCreatedEvent2 = receipt2?.logs?.find((e) => {
-        return e.topics[0] === ethers.id("WalletCreated(address,address)");
-      }) as EventLog;
-
-      let aliceWalletAddressSecond: string = "";
-      if (walletCreatedEvent2) {
-        aliceWalletAddressSecond = walletCreatedEvent2.args[1];
-      }
+      const { walletAddress: aliceWalletAddressSecond } =
+        await createWalletAndGetAddress(ayaraController, alice);
 
       log(`aliceWalletAddressSecond: ${aliceWalletAddressSecond}`);
       expect(aliceWalletAddressSecond).to.equal(aliceWalletAddress);
@@ -175,14 +169,9 @@ describe("AyaraMain", function () {
   describe("AyaraWalletInstace: Send transactions, self-funded", async function () {
     it("Should send ETH", async function () {
       const { ayaraController, alice, bob } = await loadFixture(setup);
-      const ayaraControllerInstance = ayaraController.connect(alice);
 
-      const aliceAddress = await alice.getAddress();
-      const tx = await ayaraControllerInstance.createWallet(aliceAddress, []);
-      const receipt = await tx.wait();
-
-      const aliceWalletAddress =
-        await ayaraControllerInstance.wallets(aliceAddress);
+      const { walletAddress: aliceWalletAddress } =
+        await createWalletAndGetAddress(ayaraController, alice);
 
       // Check that the wallet is empty
       const balanceWalletEmpty =
@@ -237,14 +226,9 @@ describe("AyaraMain", function () {
     it("Should send ERC20, interaction with Smart Contract", async function () {
       const { ayaraController, alice, bob, erc20Mock } =
         await loadFixture(setup);
-      const ayaraControllerInstance = ayaraController.connect(alice);
 
-      const aliceAddress = await alice.getAddress();
-      const tx = await ayaraControllerInstance.createWallet(aliceAddress, []);
-      const receipt = await tx.wait();
-
-      const aliceWalletAddress =
-        await ayaraControllerInstance.wallets(aliceAddress);
+      const { walletAddress: aliceWalletAddress } =
+        await createWalletAndGetAddress(ayaraController, alice);
 
       // Check that the wallet is empty
       const balanceWalletEmpty = await erc20Mock.balanceOf(aliceWalletAddress);
@@ -293,67 +277,67 @@ describe("AyaraMain", function () {
       expect(bobBalanceAfter).to.equal(ethers.parseEther("1000"));
       log(`bobBalanceAfter: ${bobBalanceAfter}`);
     });
-    it("Should send ERC20, via Relayer with valid signature", async function () {
-      const { ayaraController, alice, bob, erc20Mock, relayer } =
-        await loadFixture(setup);
-      const ayaraControllerInstance = ayaraController.connect(alice);
+    describe("ERC20 transactions via Relayer with valid signature", function () {
+      it("Should send ERC20", async function () {
+        const { ayaraController, alice, bob, erc20Mock, relayer } =
+          await loadFixture(setup);
 
-      const aliceAddress = await alice.getAddress();
-      const tx = await ayaraControllerInstance.createWallet(aliceAddress, []);
-      const receipt = await tx.wait();
+        const aliceAddress = await alice.getAddress();
+        const { walletAddress: aliceWalletAddress } =
+          await createWalletAndGetAddress(ayaraController, alice);
 
-      const aliceWalletAddress =
-        await ayaraControllerInstance.wallets(aliceAddress);
+        // Check that the wallet is empty
+        const balanceWalletEmpty =
+          await erc20Mock.balanceOf(aliceWalletAddress);
+        expect(balanceWalletEmpty).to.equal(0);
+        log(`aliceWallet Empty Balance: ${balanceWalletEmpty}`);
 
-      // Check that the wallet is empty
-      const balanceWalletEmpty = await erc20Mock.balanceOf(aliceWalletAddress);
-      expect(balanceWalletEmpty).to.equal(0);
-      log(`aliceWallet Empty Balance: ${balanceWalletEmpty}`);
+        // Mint 1000 ERC20 into the wallet
+        const tx2 = await erc20Mock.mint(
+          aliceWalletAddress,
+          ethers.parseEther("1000")
+        );
+        await tx2.wait();
+        const balanceWalletBefore =
+          await erc20Mock.balanceOf(aliceWalletAddress);
+        expect(balanceWalletBefore).to.equal(ethers.parseEther("1000"));
+        log(`balanceWallet: ${balanceWalletBefore}`);
 
-      // Mint 1000 ERC20 into the wallet
-      const tx2 = await erc20Mock.mint(
-        aliceWalletAddress,
-        ethers.parseEther("1000")
-      );
-      await tx2.wait();
-      const balanceWalletBefore = await erc20Mock.balanceOf(aliceWalletAddress);
-      expect(balanceWalletBefore).to.equal(ethers.parseEther("1000"));
-      log(`balanceWallet: ${balanceWalletBefore}`);
+        const ayaraWalletInstanceAlice = (
+          await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
+        ).connect(alice);
 
-      const ayaraWalletInstanceAlice = (
-        await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
-      ).connect(alice);
+        // Get data and nonce for the transaction
+        const data = erc20Mock.interface.encodeFunctionData("transfer", [
+          await bob.getAddress(),
+          ethers.parseEther("1000"),
+        ]);
 
-      // Get data and nonce for the transaction
-      const data = erc20Mock.interface.encodeFunctionData("transfer", [
-        await bob.getAddress(),
-        ethers.parseEther("1000"),
-      ]);
+        const nonce = await ayaraWalletInstanceAlice.nonce();
 
-      const nonce = await ayaraWalletInstanceAlice.nonce();
+        const message = ethers.solidityPacked(
+          ["address", "address", "uint256", "bytes"],
+          [
+            await ayaraWalletInstanceAlice.ownerAddress(),
+            await ayaraWalletInstanceAlice.controllerAddress(),
+            nonce,
+            data,
+          ]
+        );
+        const signature = await alice.signMessage(ethers.getBytes(message));
 
-      const message = ethers.solidityPackedKeccak256(
-        ["address", "address", "uint256", "bytes"],
-        [
-          await ayaraWalletInstanceAlice.addressOwner(),
-          await ayaraWalletInstanceAlice.controller(),
-          nonce,
-          data,
-        ]
-      );
-      const signature = await alice.signMessage(ethers.getBytes(message));
+        const ayaraWalletInstanceRelayer = (
+          await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
+        ).connect(relayer);
 
-      const ayaraWalletInstanceRelayer = (
-        await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
-      ).connect(relayer);
-
-      const tx3 = await ayaraWalletInstanceRelayer.execute(
-        await erc20Mock.getAddress(),
-        0,
-        data, // Data for transfer
-        signature
-      );
-      await tx3.wait();
+        const tx3 = await ayaraWalletInstanceRelayer.execute(
+          await erc20Mock.getAddress(),
+          0,
+          data, // Data for transfer
+          signature
+        );
+        await tx3.wait();
+      });
     });
   });
 });
