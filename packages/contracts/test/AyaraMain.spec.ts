@@ -42,7 +42,7 @@ describe("AyaraMain", function () {
     const deployerAddress = await deployer.getAddress();
     expect(adminAddress).to.equal(deployerAddress);
   });
-  describe("AyaraWalletInstace", async function () {
+  describe("AyaraWalletInstace: Wallet creation and addresses tests", async function () {
     let aliceWalletAddress: string;
     let bobWalletAddress: string;
 
@@ -54,6 +54,33 @@ describe("AyaraMain", function () {
       await expect(
         ayaraControllerInstance.createWallet(aliceAddress, [])
       ).to.emit(ayaraControllerInstance, "WalletCreated");
+    });
+    it("Should have the right contract and interface for the Wallet", async function () {
+      const { ayaraController, alice } = await loadFixture(setup);
+      const ayaraControllerInstance = ayaraController.connect(alice);
+
+      const aliceAddress = await alice.getAddress();
+      const tx = await ayaraControllerInstance.createWallet(aliceAddress, []);
+      const receipt = await tx.wait();
+
+      // Query the Wallet address
+      const aliceWalletAddress =
+        await ayaraControllerInstance.wallets(aliceAddress);
+      log(`aliceWalletAddress: ${aliceWalletAddress}`);
+
+      // Create smart contract instance
+      const ayaraWalletInstance = await ethers.getContractAt(
+        "AyaraWalletInstance",
+        aliceWalletAddress
+      );
+
+      // Check the storage properties
+      expect(await ayaraWalletInstance.VERSION()).to.equal(1);
+      expect(await ayaraWalletInstance.addressOwner()).to.equal(aliceAddress);
+      expect(await ayaraWalletInstance.controller()).to.equal(
+        await ayaraControllerInstance.getAddress()
+      );
+      expect(await ayaraWalletInstance.nonce()).to.equal(0);
     });
     it("Should create a new Wallet for Alice", async function () {
       const { ayaraController, alice } = await loadFixture(setup);
@@ -143,4 +170,5 @@ describe("AyaraMain", function () {
       expect(aliceWalletAddressSecond).to.equal(aliceWalletAddress);
     });
   });
+  describe("AyaraWalletInstace: Send transactions, self-funded", async function () {});
 });

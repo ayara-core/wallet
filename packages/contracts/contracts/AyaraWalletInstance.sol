@@ -6,8 +6,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract AyaraWalletInstance is Ownable {
     error InvalidZeroAddress();
 
-    address public addressOwner;
-    address public controller;
+    uint256 public constant VERSION = 1;
+
+    address public immutable addressOwner;
+    address public immutable controller;
     uint256 public nonce;
 
     receive() external payable {}
