@@ -2,6 +2,7 @@
 pragma solidity ^0.8.23;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract AyaraWalletInstance is Ownable {
     error InvalidZeroAddress();
@@ -25,11 +26,33 @@ contract AyaraWalletInstance is Ownable {
         nonce = 0;
     }
 
+    modifier onlyOwnerOrValidSignature(
+        bytes memory signature,
+        bytes memory data
+    ) {
+        if (msg.sender == addressOwner) {
+            _;
+        } else {
+            bytes32 hash = keccak256(abi.encodePacked(address(this), nonce));
+            address signer = ECDSA.recover(hash, signature);
+            if (signer != addressOwner) {
+                revert OwnableUnauthorizedAccount(signer);
+            }
+            _;
+        }
+    }
+
     function execute(
         address to,
         uint256 value,
-        bytes calldata data
-    ) external payable onlyOwner returns (bool, bytes memory) {
+        bytes calldata data,
+        bytes calldata signature
+    )
+        external
+        payable
+        onlyOwnerOrValidSignature(signature, data)
+        returns (bool, bytes memory)
+    {
         if (address(this).balance < value) {
             revert InsufficientBalance(uint256(address(this).balance), value);
         }
