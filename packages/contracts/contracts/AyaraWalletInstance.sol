@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
+import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
-contract AyaraWalletInstance is Ownable {
+contract AyaraWalletInstance {
     error InvalidZeroAddress();
     error InsufficientBalance(uint256 balance, uint256 value);
     error ExecutionFailed(bytes data);
+    error OwnableUnauthorizedAccount(address account);
+    error InvalidSignature();
 
     uint256 public constant VERSION = 1;
 
@@ -17,10 +20,7 @@ contract AyaraWalletInstance is Ownable {
 
     receive() external payable {}
 
-    constructor(
-        address addressOwner_,
-        address controller_
-    ) Ownable(addressOwner_) {
+    constructor(address addressOwner_, address controller_) {
         addressOwner = addressOwner_;
         controller = controller_;
         nonce = 0;
@@ -33,11 +33,23 @@ contract AyaraWalletInstance is Ownable {
         if (msg.sender == addressOwner) {
             _;
         } else {
-            bytes32 hash = keccak256(abi.encodePacked(address(this), nonce));
-            address signer = ECDSA.recover(hash, signature);
-            if (signer != addressOwner) {
-                revert OwnableUnauthorizedAccount(signer);
+            // TODO: ADD CHAIN ID!
+            bytes32 hash = MessageHashUtils.toEthSignedMessageHash(
+                keccak256(
+                    abi.encodePacked(addressOwner, controller, nonce, data)
+                )
+            );
+
+            if (
+                !SignatureChecker.isValidSignatureNow(
+                    addressOwner,
+                    hash,
+                    signature
+                )
+            ) {
+                revert InvalidSignature();
             }
+
             _;
         }
     }
