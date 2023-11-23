@@ -14,6 +14,7 @@ contract AyaraWalletInstance {
     error ExecutionFailed(bytes data);
     error OwnableUnauthorizedAccount(address account);
     error InvalidSignature();
+    error InvalidNonce(uint256 givenNonce, uint256 expectedNonce);
 
     uint256 public constant VERSION = 1;
 
@@ -73,9 +74,11 @@ contract AyaraWalletInstance {
         onlyOwnerOrValidSignature(signature, data)
         returns (bool, bytes memory)
     {
+        // Check that the contract has enough balance to execute the call
         if (address(this).balance < value) {
             revert InsufficientBalance(uint256(address(this).balance), value);
         }
+
         return _execute(to, value, data);
     }
 

@@ -1,7 +1,7 @@
 {
   "31337": {
     "Create2Factory": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-    "AyaraController": "0x3ce36E3ab88dDdEaf43Cf5c8E4CA2c9060584DCB",
+    "AyaraController": "0x383277bc4Dc7f0D783a090bC2Eb296fEcDC73B7f",
     "ERC20Mock": "0x965DCfd557Ffe6618230180801FDa16691e15c34"
   }
 }
