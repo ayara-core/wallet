@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract AyaraWalletInstance is Ownable {
     error InvalidZeroAddress();
+    error InsufficientBalance(uint256 balance, uint256 value);
+    error ExecutionFailed(bytes data);
 
     uint256 public constant VERSION = 1;
 
@@ -25,17 +27,24 @@ contract AyaraWalletInstance is Ownable {
 
     function execute(
         address to,
+        uint256 value,
         bytes calldata data
     ) external payable onlyOwner returns (bool, bytes memory) {
-        return _execute(to, data);
+        if (address(this).balance < value) {
+            revert InsufficientBalance(uint256(address(this).balance), value);
+        }
+        return _execute(to, value, data);
     }
 
     function _execute(
         address to,
+        uint256 value,
         bytes calldata data
     ) private returns (bool, bytes memory) {
-        (bool success, bytes memory result) = to.call{value: msg.value}(data);
-        require(success, "!success");
+        (bool success, bytes memory result) = to.call{value: value}(data);
+        if (!success) {
+            revert ExecutionFailed(data);
+        }
 
         nonce++;
 

@@ -170,5 +170,66 @@ describe("AyaraMain", function () {
       expect(aliceWalletAddressSecond).to.equal(aliceWalletAddress);
     });
   });
-  describe("AyaraWalletInstace: Send transactions, self-funded", async function () {});
+  describe("AyaraWalletInstace: Send transactions, self-funded", async function () {
+    it("Should send ETH", async function () {
+      const { ayaraController, alice, bob } = await loadFixture(setup);
+      const ayaraControllerInstance = ayaraController.connect(alice);
+
+      const aliceAddress = await alice.getAddress();
+      const tx = await ayaraControllerInstance.createWallet(aliceAddress, []);
+      const receipt = await tx.wait();
+
+      const aliceWalletAddress =
+        await ayaraControllerInstance.wallets(aliceAddress);
+
+      // Check that the wallet is empty
+      const balanceWalletEmpty =
+        await ethers.provider.getBalance(aliceWalletAddress);
+      expect(balanceWalletEmpty).to.equal(0);
+      log(`aliceWallet Empty Balance: ${balanceWalletEmpty}`);
+
+      // Transfer 1 ETH into the wallet
+      const tx2 = await alice.sendTransaction({
+        to: aliceWalletAddress,
+        value: ethers.parseEther("1"),
+      });
+
+      // Wait for the transaction to be mined
+      await tx2.wait();
+
+      // Check the balance of the wallet
+      const balanceWalletBefore =
+        await ethers.provider.getBalance(aliceWalletAddress);
+      expect(balanceWalletBefore).to.equal(ethers.parseEther("1"));
+      log(`balanceWallet: ${balanceWalletBefore}`);
+
+      // Try to send 0.5 ETH to Bob
+      const bobAddress = await bob.getAddress();
+      const bobBalanceBefore = await ethers.provider.getBalance(bobAddress);
+      log(`bobBalanceBefore: ${bobBalanceBefore}`);
+      const ayaraWalletInstanceAlice = (
+        await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
+      ).connect(alice);
+
+      const tx3 = await ayaraWalletInstanceAlice.execute(
+        bobAddress,
+        ethers.parseEther("0.5"),
+        "0x"
+      );
+      await tx3.wait();
+
+      // Check the balance of the wallet
+      const balanceWalletAfter =
+        await ethers.provider.getBalance(aliceWalletAddress);
+      expect(balanceWalletAfter).to.equal(ethers.parseEther("0.5"));
+      log(`balanceWalletAfter: ${balanceWalletAfter}`);
+
+      // Check the balance of Bob
+      const bobBalanceAfter = await ethers.provider.getBalance(bobAddress);
+      expect(bobBalanceAfter).to.equal(
+        bobBalanceBefore + ethers.parseEther("0.5")
+      );
+      log(`bobBalanceAfter: ${bobBalanceAfter}`);
+    });
+  });
 });
