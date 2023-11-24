@@ -44,6 +44,7 @@ async function createWalletAndGetAddress(
 }
 
 describe("AyaraMain", function () {
+  const CHAIN_ID = 31337;
   // This fixture deploys the contract and returns it
   const setup = async () => {
     // Get signers
@@ -69,6 +70,7 @@ describe("AyaraMain", function () {
     expect(await ayaraControllerInstance.salt()).to.equal(
       systemConfig.ayaraConfig.salt
     );
+    expect(await ayaraControllerInstance.chainId()).to.equal(CHAIN_ID);
 
     const adminAddress = await ayaraControllerInstance.owner();
     log(`adminAddress: ${adminAddress}`);
@@ -106,6 +108,7 @@ describe("AyaraMain", function () {
         await ayaraController.getAddress()
       );
       expect(await walletInstance.nonce()).to.equal(0);
+      expect(await walletInstance.chainId()).to.equal(CHAIN_ID);
     });
     it("Should create a new Wallet for Alice", async function () {
       const { ayaraController, alice } = await loadFixture(setup);
@@ -302,264 +305,262 @@ describe("AyaraMain", function () {
       expect(bobBalanceAfter).to.equal(ethers.parseEther("1000"));
       log(`bobBalanceAfter: ${bobBalanceAfter}`);
     });
-    describe("ERC20 transactions via Relayer with valid signature", function () {
-      it("Should send ERC20", async function () {
-        const { ayaraController, alice, bob, erc20Mock, relayer } =
-          await loadFixture(setup);
+  });
+  describe("ERC20 transactions via Relayer with valid signature", function () {
+    it("Should send ERC20", async function () {
+      const { ayaraController, alice, bob, erc20Mock, relayer } =
+        await loadFixture(setup);
 
-        const { walletAddress: aliceWalletAddress } =
-          await createWalletAndGetAddress(ayaraController, alice);
+      const { walletAddress: aliceWalletAddress } =
+        await createWalletAndGetAddress(ayaraController, alice);
 
-        // Check that the wallet is empty
-        const balanceWalletEmpty =
-          await erc20Mock.balanceOf(aliceWalletAddress);
-        expect(balanceWalletEmpty).to.equal(0);
-        log(`aliceWallet Empty Balance: ${balanceWalletEmpty}`);
+      // Check that the wallet is empty
+      const balanceWalletEmpty = await erc20Mock.balanceOf(aliceWalletAddress);
+      expect(balanceWalletEmpty).to.equal(0);
+      log(`aliceWallet Empty Balance: ${balanceWalletEmpty}`);
 
-        // Mint 1000 ERC20 into the wallet
-        const tx2 = await erc20Mock.mint(
-          aliceWalletAddress,
-          ethers.parseEther("1000")
-        );
-        await tx2.wait();
-        const balanceWalletBefore =
-          await erc20Mock.balanceOf(aliceWalletAddress);
-        expect(balanceWalletBefore).to.equal(ethers.parseEther("1000"));
-        log(`balanceWallet: ${balanceWalletBefore}`);
+      // Mint 1000 ERC20 into the wallet
+      const tx2 = await erc20Mock.mint(
+        aliceWalletAddress,
+        ethers.parseEther("1000")
+      );
+      await tx2.wait();
+      const balanceWalletBefore = await erc20Mock.balanceOf(aliceWalletAddress);
+      expect(balanceWalletBefore).to.equal(ethers.parseEther("1000"));
+      log(`balanceWallet: ${balanceWalletBefore}`);
 
-        const ayaraWalletInstanceAlice = (
-          await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
-        ).connect(alice);
+      const ayaraWalletInstanceAlice = (
+        await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
+      ).connect(alice);
 
-        // Get data and nonce for the transaction
-        const data = erc20Mock.interface.encodeFunctionData("transfer", [
-          await bob.getAddress(),
-          ethers.parseEther("1000"),
-        ]);
+      // Get data and nonce for the transaction
+      const data = erc20Mock.interface.encodeFunctionData("transfer", [
+        await bob.getAddress(),
+        ethers.parseEther("1000"),
+      ]);
 
-        const nonce = await ayaraWalletInstanceAlice.nonce();
+      const nonce = await ayaraWalletInstanceAlice.nonce();
 
-        const message = ethers.solidityPacked(
-          ["address", "address", "uint256", "bytes"],
-          [
-            await ayaraWalletInstanceAlice.ownerAddress(),
-            await ayaraWalletInstanceAlice.controllerAddress(),
-            nonce,
-            data,
-          ]
-        );
-        const signature = await alice.signMessage(ethers.getBytes(message));
+      const message = ethers.solidityPacked(
+        ["address", "address", "uint256", "uint256", "bytes"],
+        [
+          await ayaraWalletInstanceAlice.ownerAddress(),
+          await ayaraWalletInstanceAlice.controllerAddress(),
+          CHAIN_ID,
+          nonce,
+          data,
+        ]
+      );
+      const signature = await alice.signMessage(ethers.getBytes(message));
 
-        const ayaraWalletInstanceRelayer = (
-          await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
-        ).connect(relayer);
+      const ayaraWalletInstanceRelayer = (
+        await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
+      ).connect(relayer);
 
-        const tx3 = await ayaraWalletInstanceRelayer.execute(
-          await erc20Mock.getAddress(),
-          0,
-          data, // Data for transfer
-          signature
-        );
-        await tx3.wait();
-      });
-      it("Should not send ERC20 if the signature is invalid", async function () {
-        const { ayaraController, alice, bob, erc20Mock, relayer } =
-          await loadFixture(setup);
+      const tx3 = await ayaraWalletInstanceRelayer.execute(
+        await erc20Mock.getAddress(),
+        0,
+        data, // Data for transfer
+        signature
+      );
+      await tx3.wait();
+    });
+    it("Should not send ERC20 if the signature is invalid", async function () {
+      const { ayaraController, alice, bob, erc20Mock, relayer } =
+        await loadFixture(setup);
 
-        const { walletAddress: aliceWalletAddress } =
-          await createWalletAndGetAddress(ayaraController, alice);
+      const { walletAddress: aliceWalletAddress } =
+        await createWalletAndGetAddress(ayaraController, alice);
 
-        // Check that the wallet is empty
-        const balanceWalletEmpty =
-          await erc20Mock.balanceOf(aliceWalletAddress);
-        expect(balanceWalletEmpty).to.equal(0);
-        log(`aliceWallet Empty Balance: ${balanceWalletEmpty}`);
+      // Check that the wallet is empty
+      const balanceWalletEmpty = await erc20Mock.balanceOf(aliceWalletAddress);
+      expect(balanceWalletEmpty).to.equal(0);
+      log(`aliceWallet Empty Balance: ${balanceWalletEmpty}`);
 
-        // Mint 1000 ERC20 into the wallet
-        const tx = await erc20Mock.mint(
-          aliceWalletAddress,
-          ethers.parseEther("1000")
-        );
-        await tx.wait();
-        const balanceWalletBefore =
-          await erc20Mock.balanceOf(aliceWalletAddress);
-        expect(balanceWalletBefore).to.equal(ethers.parseEther("1000"));
-        log(`balanceWallet: ${balanceWalletBefore}`);
+      // Mint 1000 ERC20 into the wallet
+      const tx = await erc20Mock.mint(
+        aliceWalletAddress,
+        ethers.parseEther("1000")
+      );
+      await tx.wait();
+      const balanceWalletBefore = await erc20Mock.balanceOf(aliceWalletAddress);
+      expect(balanceWalletBefore).to.equal(ethers.parseEther("1000"));
+      log(`balanceWallet: ${balanceWalletBefore}`);
 
-        const ayaraWalletInstanceAlice = (
-          await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
-        ).connect(alice);
+      const ayaraWalletInstanceAlice = (
+        await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
+      ).connect(alice);
 
-        // Get data and nonce for the transaction
-        const data = erc20Mock.interface.encodeFunctionData("transfer", [
-          await bob.getAddress(),
-          ethers.parseEther("1000"),
-        ]);
+      // Get data and nonce for the transaction
+      const data = erc20Mock.interface.encodeFunctionData("transfer", [
+        await bob.getAddress(),
+        ethers.parseEther("1000"),
+      ]);
 
-        const nonce = await ayaraWalletInstanceAlice.nonce();
+      const nonce = await ayaraWalletInstanceAlice.nonce();
 
-        const message = ethers.solidityPacked(
-          ["address", "address", "uint256", "bytes"],
-          [
-            await ayaraWalletInstanceAlice.ownerAddress(),
-            await ayaraWalletInstanceAlice.controllerAddress(),
-            nonce,
-            data,
-          ]
-        );
-        const signature = await relayer.signMessage(ethers.getBytes(message));
+      const message = ethers.solidityPacked(
+        ["address", "address", "uint256", "uint256", "bytes"],
+        [
+          await ayaraWalletInstanceAlice.ownerAddress(),
+          await ayaraWalletInstanceAlice.controllerAddress(),
+          CHAIN_ID,
+          nonce,
+          data,
+        ]
+      );
+      const signature = await relayer.signMessage(ethers.getBytes(message));
 
-        const ayaraWalletInstanceRelayer = (
-          await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
-        ).connect(relayer);
+      const ayaraWalletInstanceRelayer = (
+        await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
+      ).connect(relayer);
 
-        const tx2 = ayaraWalletInstanceRelayer.execute(
-          await erc20Mock.getAddress(),
-          0,
-          data, // Data for transfer
-          signature
-        );
-        await expect(tx2).to.revertedWithCustomError(
-          ayaraWalletInstanceRelayer,
-          "InvalidSignature"
-        );
-        it("Should not send ERC20 if the nonce is invalid, too high", async function () {
-          const { ayaraController, alice, bob, erc20Mock, relayer } =
-            await loadFixture(setup);
+      const tx2 = ayaraWalletInstanceRelayer.execute(
+        await erc20Mock.getAddress(),
+        0,
+        data, // Data for transfer
+        signature
+      );
+      await expect(tx2).to.revertedWithCustomError(
+        ayaraWalletInstanceRelayer,
+        "InvalidSignature"
+      );
+    });
+    it("Should not send ERC20 if the nonce is invalid, too high", async function () {
+      const { ayaraController, alice, bob, erc20Mock, relayer } =
+        await loadFixture(setup);
 
-          const { walletAddress: aliceWalletAddress } =
-            await createWalletAndGetAddress(ayaraController, alice);
+      const { walletAddress: aliceWalletAddress } =
+        await createWalletAndGetAddress(ayaraController, alice);
 
-          // Check that the wallet is empty
-          const balanceWalletEmpty =
-            await erc20Mock.balanceOf(aliceWalletAddress);
-          expect(balanceWalletEmpty).to.equal(0);
-          log(`aliceWallet Empty Balance: ${balanceWalletEmpty}`);
+      // Check that the wallet is empty
+      const balanceWalletEmpty = await erc20Mock.balanceOf(aliceWalletAddress);
+      expect(balanceWalletEmpty).to.equal(0);
+      log(`aliceWallet Empty Balance: ${balanceWalletEmpty}`);
 
-          // Mint 1000 ERC20 into the wallet
-          const tx = await erc20Mock.mint(
-            aliceWalletAddress,
-            ethers.parseEther("1000")
-          );
-          await tx.wait();
-          const balanceWalletBefore =
-            await erc20Mock.balanceOf(aliceWalletAddress);
-          expect(balanceWalletBefore).to.equal(ethers.parseEther("1000"));
-          log(`balanceWallet: ${balanceWalletBefore}`);
+      // Mint 1000 ERC20 into the wallet
+      const tx = await erc20Mock.mint(
+        aliceWalletAddress,
+        ethers.parseEther("1000")
+      );
+      await tx.wait();
+      const balanceWalletBefore = await erc20Mock.balanceOf(aliceWalletAddress);
+      expect(balanceWalletBefore).to.equal(ethers.parseEther("1000"));
+      log(`balanceWallet: ${balanceWalletBefore}`);
 
-          const ayaraWalletInstanceAlice = (
-            await ethers.getContractAt(
-              "AyaraWalletInstance",
-              aliceWalletAddress
-            )
-          ).connect(alice);
+      const ayaraWalletInstanceAlice = (
+        await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
+      ).connect(alice);
 
-          // Get data and nonce for the transaction
-          const data = erc20Mock.interface.encodeFunctionData("transfer", [
-            await bob.getAddress(),
-            ethers.parseEther("1000"),
-          ]);
+      // Get data and nonce for the transaction
+      const data = erc20Mock.interface.encodeFunctionData("transfer", [
+        await bob.getAddress(),
+        ethers.parseEther("1000"),
+      ]);
 
-          const nonce = await ayaraWalletInstanceAlice.nonce();
+      const nonce = await ayaraWalletInstanceAlice.nonce();
 
-          const message = ethers.solidityPacked(
-            ["address", "address", "uint256", "bytes"],
-            [
-              await ayaraWalletInstanceAlice.ownerAddress(),
-              await ayaraWalletInstanceAlice.controllerAddress(),
-              nonce + 1n,
-              data,
-            ]
-          );
-          const signature = await alice.signMessage(ethers.getBytes(message));
+      const message = ethers.solidityPacked(
+        ["address", "address", "uint256", "uint256", "bytes"],
+        [
+          await ayaraWalletInstanceAlice.ownerAddress(),
+          await ayaraWalletInstanceAlice.controllerAddress(),
+          CHAIN_ID,
+          nonce + 1n,
+          data,
+        ]
+      );
+      const signature = await alice.signMessage(ethers.getBytes(message));
 
-          const ayaraWalletInstanceRelayer = (
-            await ethers.getContractAt(
-              "AyaraWalletInstance",
-              aliceWalletAddress
-            )
-          ).connect(relayer);
+      const ayaraWalletInstanceRelayer = (
+        await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
+      ).connect(relayer);
 
-          const tx2 = ayaraWalletInstanceRelayer.execute(
-            await erc20Mock.getAddress(),
-            0,
-            data, // Data for transfer
-            signature
-          );
-          await expect(tx2).to.revertedWithCustomError(
-            ayaraWalletInstanceRelayer,
-            "InvalidSignature"
-          );
-        });
-        it("Should not send ERC20 if the nonce is invalid, too low", async function () {
-          const { ayaraController, alice, bob, erc20Mock, relayer } =
-            await loadFixture(setup);
+      const tx2 = ayaraWalletInstanceRelayer.execute(
+        await erc20Mock.getAddress(),
+        0,
+        data, // Data for transfer
+        signature
+      );
+      await expect(tx2).to.revertedWithCustomError(
+        ayaraWalletInstanceRelayer,
+        "InvalidSignature"
+      );
+    });
+    it("Should not send ERC20 if the nonce is invalid, too low", async function () {
+      const { ayaraController, alice, bob, erc20Mock, relayer } =
+        await loadFixture(setup);
 
-          const { walletAddress: aliceWalletAddress } =
-            await createWalletAndGetAddress(ayaraController, alice);
+      const { walletAddress: aliceWalletAddress } =
+        await createWalletAndGetAddress(ayaraController, alice);
 
-          // Check that the wallet is empty
-          const balanceWalletEmpty =
-            await erc20Mock.balanceOf(aliceWalletAddress);
-          expect(balanceWalletEmpty).to.equal(0);
-          log(`aliceWallet Empty Balance: ${balanceWalletEmpty}`);
+      // Check that the wallet is empty
+      const balanceWalletEmpty = await erc20Mock.balanceOf(aliceWalletAddress);
+      expect(balanceWalletEmpty).to.equal(0);
+      log(`aliceWallet Empty Balance: ${balanceWalletEmpty}`);
 
-          // Mint 1000 ERC20 into the wallet
-          const tx = await erc20Mock.mint(
-            aliceWalletAddress,
-            ethers.parseEther("1000")
-          );
-          await tx.wait();
-          const balanceWalletBefore =
-            await erc20Mock.balanceOf(aliceWalletAddress);
-          expect(balanceWalletBefore).to.equal(ethers.parseEther("1000"));
-          log(`balanceWallet: ${balanceWalletBefore}`);
+      // Mint 1000 ERC20 into the wallet
+      const tx = await erc20Mock.mint(
+        aliceWalletAddress,
+        ethers.parseEther("1000")
+      );
+      await tx.wait();
+      const balanceWalletBefore = await erc20Mock.balanceOf(aliceWalletAddress);
+      expect(balanceWalletBefore).to.equal(ethers.parseEther("1000"));
+      log(`balanceWallet: ${balanceWalletBefore}`);
 
-          const ayaraWalletInstanceAlice = (
-            await ethers.getContractAt(
-              "AyaraWalletInstance",
-              aliceWalletAddress
-            )
-          ).connect(alice);
+      const ayaraWalletInstanceAlice = (
+        await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
+      ).connect(alice);
 
-          // Get data and nonce for the transaction
-          const data = erc20Mock.interface.encodeFunctionData("transfer", [
-            await bob.getAddress(),
-            ethers.parseEther("1000"),
-          ]);
+      // Get data and nonce for the transaction
+      const data = erc20Mock.interface.encodeFunctionData("transfer", [
+        await bob.getAddress(),
+        ethers.parseEther("500"),
+      ]);
 
-          const nonce = await ayaraWalletInstanceAlice.nonce();
+      const nonce = await ayaraWalletInstanceAlice.nonce();
 
-          const message = ethers.solidityPacked(
-            ["address", "address", "uint256", "bytes"],
-            [
-              await ayaraWalletInstanceAlice.ownerAddress(),
-              await ayaraWalletInstanceAlice.controllerAddress(),
-              nonce - 1n,
-              data,
-            ]
-          );
-          const signature = await alice.signMessage(ethers.getBytes(message));
+      const message = ethers.solidityPacked(
+        ["address", "address", "uint256", "uint256", "bytes"],
+        [
+          await ayaraWalletInstanceAlice.ownerAddress(),
+          await ayaraWalletInstanceAlice.controllerAddress(),
+          CHAIN_ID,
+          nonce,
+          data,
+        ]
+      );
+      const signature = await alice.signMessage(ethers.getBytes(message));
 
-          const ayaraWalletInstanceRelayer = (
-            await ethers.getContractAt(
-              "AyaraWalletInstance",
-              aliceWalletAddress
-            )
-          ).connect(relayer);
+      const ayaraWalletInstanceRelayer = (
+        await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
+      ).connect(relayer);
 
-          const tx2 = ayaraWalletInstanceRelayer.execute(
-            await erc20Mock.getAddress(),
-            0,
-            data, // Data for transfer
-            signature
-          );
-          await expect(tx2).to.revertedWithCustomError(
-            ayaraWalletInstanceRelayer,
-            "InvalidSignature"
-          );
-        });
-      });
+      const tx2 = await ayaraWalletInstanceRelayer.execute(
+        await erc20Mock.getAddress(),
+        0,
+        data, // Data for transfer
+        signature
+      );
+      await tx2.wait();
+
+      // confirm that the nonce has been incremented
+      const nonceAfter = await ayaraWalletInstanceAlice.nonce();
+      expect(nonceAfter).to.equal(nonce + 1n);
+
+      // Try again to send with the same nonce
+      const tx3 = ayaraWalletInstanceRelayer.execute(
+        await erc20Mock.getAddress(),
+        0,
+        data, // Data for transfer
+        signature
+      );
+
+      await expect(tx3).to.revertedWithCustomError(
+        ayaraWalletInstanceRelayer,
+        "InvalidSignature"
+      );
     });
   });
 });

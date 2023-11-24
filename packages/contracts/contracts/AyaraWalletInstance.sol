@@ -20,6 +20,7 @@ contract AyaraWalletInstance {
 
     address public immutable ownerAddress;
     address public immutable controllerAddress;
+    uint256 public immutable chainId;
     uint256 public nonce;
 
     receive() external payable {}
@@ -27,9 +28,14 @@ contract AyaraWalletInstance {
     /**
      * @dev Initializes the contract setting the owner and controller addresses.
      */
-    constructor(address ownerAddress_, address controllerAddress_) {
+    constructor(
+        address ownerAddress_,
+        address controllerAddress_,
+        uint256 chainId_
+    ) {
         ownerAddress = ownerAddress_;
         controllerAddress = controllerAddress_;
+        chainId = chainId_;
         nonce = 0;
     }
 
@@ -45,7 +51,13 @@ contract AyaraWalletInstance {
         } else {
             // TODO: ADD CHAIN ID!
             bytes32 hash = MessageHashUtils.toEthSignedMessageHash(
-                abi.encodePacked(ownerAddress, controllerAddress, nonce, data)
+                abi.encodePacked(
+                    ownerAddress,
+                    controllerAddress,
+                    chainId,
+                    nonce,
+                    data
+                )
             );
 
             if (

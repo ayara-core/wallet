@@ -11,13 +11,19 @@ contract AyaraController is Create2Factory, Ownable {
 
     uint256 public constant VERSION = 1;
     bytes32 public immutable salt;
+    uint256 public immutable chainId;
 
     mapping(address => address) public wallets;
 
     event WalletCreated(address indexed owner, address indexed wallet);
 
-    constructor(address proxyAdmin_, uint256 salt_) Ownable(proxyAdmin_) {
+    constructor(
+        address proxyAdmin_,
+        uint256 salt_,
+        uint256 chainId_
+    ) Ownable(proxyAdmin_) {
         salt = bytes32(salt_);
+        chainId = chainId_;
     }
 
     function createWallet(
@@ -30,7 +36,7 @@ contract AyaraController is Create2Factory, Ownable {
 
         // Get bytecode
         bytes memory bytecode = type(AyaraWalletInstance).creationCode;
-        bytes memory encodedArgs = abi.encode(owner, address(this));
+        bytes memory encodedArgs = abi.encode(owner, address(this), chainId);
         bytes memory finalBytecode = abi.encodePacked(bytecode, encodedArgs);
 
         // Deploy contract
