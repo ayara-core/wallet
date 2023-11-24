@@ -102,6 +102,7 @@ export async function deploySystem(
     await signer.getAddress(),
     ayaraConfig.salt,
     hre.network.config.chainId,
+    [],
   ]);
 
   const mocks = await deployMocks(hre, signer, create2Factory);

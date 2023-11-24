@@ -15,6 +15,30 @@
       {
         "type": "uint256",
         "name": "chainId_"
+      },
+      {
+        "type": "address[]",
+        "name": "gasTokens_"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "AddressEmptyCode",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "target"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "AddressInsufficientBalance",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "account"
       }
     ]
   },
@@ -44,6 +68,40 @@
   },
   {
     "type": "error",
+    "name": "FailedInnerCall",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidAmount",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "amountGiven"
+      },
+      {
+        "type": "uint256",
+        "name": "amountSupplied"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "NotApprovedGasToken",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "token"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "OperationFailed",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "OwnableInvalidOwner",
     "inputs": [
       {
@@ -64,11 +122,31 @@
   },
   {
     "type": "error",
+    "name": "SafeERC20FailedOperation",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "token"
+      }
+    ]
+  },
+  {
+    "type": "error",
     "name": "WalletAlreadyInitialized",
     "inputs": [
       {
         "type": "address",
         "name": "wallet"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "WalletNotInitialized",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner"
       }
     ]
   },
@@ -85,6 +163,43 @@
       {
         "type": "address",
         "name": "deployed",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "OperationExecuted",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "wallet",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "to",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "value",
+        "indexed": false
+      },
+      {
+        "type": "bytes",
+        "name": "data",
+        "indexed": false
+      },
+      {
+        "type": "bytes",
+        "name": "signature",
         "indexed": false
       }
     ]
@@ -120,6 +235,33 @@
         "type": "address",
         "name": "wallet",
         "indexed": true
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "WalletGasFunded",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "wallet",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "token",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "amount",
+        "indexed": false
       }
     ]
   },
@@ -228,6 +370,89 @@
   },
   {
     "type": "function",
+    "name": "executeUserOperation",
+    "constant": false,
+    "stateMutability": "payable",
+    "payable": true,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner"
+      },
+      {
+        "type": "address",
+        "name": "wallet"
+      },
+      {
+        "type": "address",
+        "name": "feeToken"
+      },
+      {
+        "type": "uint256",
+        "name": "feeAmount"
+      },
+      {
+        "type": "address",
+        "name": "to"
+      },
+      {
+        "type": "uint256",
+        "name": "value"
+      },
+      {
+        "type": "bytes",
+        "name": "data"
+      },
+      {
+        "type": "bytes",
+        "name": "signature"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "fundWallet",
+    "constant": false,
+    "stateMutability": "payable",
+    "payable": true,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner"
+      },
+      {
+        "type": "address",
+        "name": "token"
+      },
+      {
+        "type": "uint256",
+        "name": "amount"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "isGasToken",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ],
+    "outputs": [
+      {
+        "type": "bool",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
     "name": "owner",
     "constant": true,
     "stateMutability": "view",
@@ -271,6 +496,23 @@
       {
         "type": "address",
         "name": "newOwner"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "updateGasTokens",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address[]",
+        "name": "gasTokens_"
+      },
+      {
+        "type": "bool",
+        "name": "status"
       }
     ],
     "outputs": []

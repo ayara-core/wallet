@@ -8,6 +8,8 @@ import "./AyaraWalletInstance.sol";
 import "./lib/Create2Factory.sol";
 
 contract AyaraController is Create2Factory, Ownable {
+    using SafeERC20 for IERC20;
+
     error WalletAlreadyInitialized(address wallet);
     error WalletNotInitialized(address owner);
     error InvalidAmount(uint256 amountGiven, uint256 amountSupplied);
@@ -58,8 +60,23 @@ contract AyaraController is Create2Factory, Ownable {
         chainId = chainId_;
 
         // Add gas tokens
+        _updateGasTokens(gasTokens_, true);
+    }
+
+    function updateGasTokens(
+        address[] memory gasTokens_,
+        bool status
+    ) external onlyOwner {
+        _updateGasTokens(gasTokens_, status);
+    }
+
+    function _updateGasTokens(
+        address[] memory gasTokens_,
+        bool status
+    ) internal {
+        // loop through tokens
         for (uint256 i = 0; i < gasTokens_.length; i++) {
-            isGasToken[gasTokens_[i]] = true;
+            isGasToken[gasTokens_[i]] = status;
         }
     }
 
@@ -107,7 +124,7 @@ contract AyaraController is Create2Factory, Ownable {
             // Check if token is approved as gas token
             if (!isGasToken[token]) revert NotApprovedGasToken(token);
             // Transfer tokens to wallet
-            IERC20(token).transferFrom(msg.sender, wallet, amount);
+            IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
         }
         // Update gas data
         userGasData[owner].gasReserves[token].totalAmount += amount;

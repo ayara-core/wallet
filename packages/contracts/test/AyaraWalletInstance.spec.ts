@@ -18,7 +18,7 @@ const systemConfig = getSystemConfig(hre);
 
 // Helper functions
 
-describe("AyaraMain", function () {
+describe("AyaraController: AyaraWalletInstance", function () {
   const CHAIN_ID = 31337;
   // This fixture deploys the contract and returns it
   const setup = async () => {
@@ -31,27 +31,6 @@ describe("AyaraMain", function () {
     } = await deploySystem(hre, deployer, systemConfig);
     return { alice, bob, deployer, relayer, ayaraController, erc20Mock };
   };
-
-  it("Should successfully deploy", async function () {
-    const { ayaraController, deployer } = await loadFixture(setup);
-    const ayaraControllerInstance = ayaraController.connect(deployer);
-
-    expect(await ayaraControllerInstance.getAddress()).to.not.equal(
-      ethers.ZeroAddress
-    );
-    expect(await ayaraControllerInstance.getAddress()).to.be.properAddress;
-
-    expect(await ayaraControllerInstance.VERSION()).to.equal(1);
-    expect(await ayaraControllerInstance.salt()).to.equal(
-      systemConfig.ayaraConfig.salt
-    );
-    expect(await ayaraControllerInstance.chainId()).to.equal(CHAIN_ID);
-
-    const adminAddress = await ayaraControllerInstance.owner();
-    log(`adminAddress: ${adminAddress}`);
-    const deployerAddress = await deployer.getAddress();
-    expect(adminAddress).to.equal(deployerAddress);
-  });
   describe("AyaraWalletInstace: Wallet creation and addresses tests", async function () {
     let aliceWalletAddress: string;
     let bobWalletAddress: string;
