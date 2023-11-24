@@ -8,7 +8,7 @@ import { deploySystem } from "../scripts/deploy";
 import { getCommonSigners } from "../utils/signers";
 import { logger } from "../utils/deployUtils";
 
-import { AyaraWalletInstance, AyaraController } from "../typechain-types";
+import { createWalletAndGetAddress, formatSignData } from "./test-utils";
 
 // Initialize logger for test logs
 const log = logger("log", "test");
@@ -17,31 +17,6 @@ const log = logger("log", "test");
 const systemConfig = getSystemConfig(hre);
 
 // Helper functions
-async function createWalletAndGetAddress(
-  controller: AyaraController,
-  signer: Signer
-) {
-  const signerAddress = await signer.getAddress();
-  const controllerInstance = controller.connect(signer);
-  const tx = await controllerInstance.createWallet(signerAddress, []);
-  const receipt = await tx.wait();
-
-  const walletCreatedEvent = receipt?.logs?.find((e: EventLog | Log) => {
-    return e.topics[0] === ethers.id("WalletCreated(address,address)");
-  }) as EventLog;
-
-  let walletAddress = "";
-  if (walletCreatedEvent) {
-    walletAddress = walletCreatedEvent.args[1];
-  }
-
-  const walletInstance = await ethers.getContractAt(
-    "AyaraWalletInstance",
-    walletAddress
-  );
-
-  return { walletAddress, walletInstance };
-}
 
 describe("AyaraMain", function () {
   const CHAIN_ID = 31337;
@@ -339,18 +314,7 @@ describe("AyaraMain", function () {
         ethers.parseEther("1000"),
       ]);
 
-      const nonce = await ayaraWalletInstanceAlice.nonce();
-
-      const message = ethers.solidityPacked(
-        ["address", "address", "uint256", "uint256", "bytes"],
-        [
-          await ayaraWalletInstanceAlice.ownerAddress(),
-          await ayaraWalletInstanceAlice.controllerAddress(),
-          CHAIN_ID,
-          nonce,
-          data,
-        ]
-      );
+      const message = await formatSignData(ayaraWalletInstanceAlice, data);
       const signature = await alice.signMessage(ethers.getBytes(message));
 
       const ayaraWalletInstanceRelayer = (
@@ -397,18 +361,7 @@ describe("AyaraMain", function () {
         ethers.parseEther("1000"),
       ]);
 
-      const nonce = await ayaraWalletInstanceAlice.nonce();
-
-      const message = ethers.solidityPacked(
-        ["address", "address", "uint256", "uint256", "bytes"],
-        [
-          await ayaraWalletInstanceAlice.ownerAddress(),
-          await ayaraWalletInstanceAlice.controllerAddress(),
-          CHAIN_ID,
-          nonce,
-          data,
-        ]
-      );
+      const message = await formatSignData(ayaraWalletInstanceAlice, data);
       const signature = await relayer.signMessage(ethers.getBytes(message));
 
       const ayaraWalletInstanceRelayer = (
@@ -521,16 +474,7 @@ describe("AyaraMain", function () {
 
       const nonce = await ayaraWalletInstanceAlice.nonce();
 
-      const message = ethers.solidityPacked(
-        ["address", "address", "uint256", "uint256", "bytes"],
-        [
-          await ayaraWalletInstanceAlice.ownerAddress(),
-          await ayaraWalletInstanceAlice.controllerAddress(),
-          CHAIN_ID,
-          nonce,
-          data,
-        ]
-      );
+      const message = await formatSignData(ayaraWalletInstanceAlice, data);
       const signature = await alice.signMessage(ethers.getBytes(message));
 
       const ayaraWalletInstanceRelayer = (
