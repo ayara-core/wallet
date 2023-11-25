@@ -59,7 +59,7 @@ describe("AyaraController", function () {
       );
       expect(isGasToken).to.equal(false);
 
-      const tx = await ayaraControllerInstance.updateGasTokens(
+      const tx = await ayaraControllerInstance.modifyGasTokens(
         [ethers.ZeroAddress],
         true
       );
@@ -74,7 +74,7 @@ describe("AyaraController", function () {
       const { ayaraController, alice } = await loadFixture(setup);
       const ayaraControllerInstance = ayaraController.connect(alice);
 
-      const tx = ayaraControllerInstance.updateGasTokens(
+      const tx = ayaraControllerInstance.modifyGasTokens(
         [ethers.ZeroAddress],
         true
       );
@@ -110,7 +110,7 @@ describe("AyaraController", function () {
 
       // Try to fund the wallet with non-whitelisted gasToken
       const ayaraControllerInstance = ayaraController.connect(alice);
-      const tx2 = ayaraControllerInstance.fundWallet(
+      const tx2 = ayaraControllerInstance.addFundsToWallet(
         await alice.getAddress(),
         await erc20Mock.getAddress(),
         ethers.parseEther("1000")
@@ -141,7 +141,7 @@ describe("AyaraController", function () {
 
       // Whitelist the ERC20
       const ayaraControllerInstanceDeployer = ayaraController.connect(deployer);
-      const tx2 = await ayaraControllerInstanceDeployer.updateGasTokens(
+      const tx2 = await ayaraControllerInstanceDeployer.modifyGasTokens(
         [await erc20Mock.getAddress()],
         true
       );
@@ -161,7 +161,7 @@ describe("AyaraController", function () {
       // Fund the wallet
       const ayaraControllerInstance = ayaraController.connect(alice);
 
-      const tx4 = ayaraControllerInstance.fundWallet(
+      const tx4 = ayaraControllerInstance.addFundsToWallet(
         await alice.getAddress(),
         await erc20Mock.getAddress(),
         ethers.parseEther("1000")
@@ -170,7 +170,6 @@ describe("AyaraController", function () {
         .to.emit(ayaraControllerInstance, "WalletGasFunded")
         .withArgs(
           await alice.getAddress(),
-          walletAddress,
           await erc20Mock.getAddress(),
           ethers.parseEther("1000")
         );

@@ -241,7 +241,7 @@
   {
     "type": "event",
     "anonymous": false,
-    "name": "WalletGasFunded",
+    "name": "WalletGasCharged",
     "inputs": [
       {
         "type": "address",
@@ -250,7 +250,24 @@
       },
       {
         "type": "address",
-        "name": "wallet",
+        "name": "token",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "amount",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "WalletGasFunded",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner",
         "indexed": true
       },
       {
@@ -278,6 +295,28 @@
         "name": ""
       }
     ]
+  },
+  {
+    "type": "function",
+    "name": "addFundsToWallet",
+    "constant": false,
+    "stateMutability": "payable",
+    "payable": true,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner_"
+      },
+      {
+        "type": "address",
+        "name": "token_"
+      },
+      {
+        "type": "uint256",
+        "name": "amount_"
+      }
+    ],
+    "outputs": []
   },
   {
     "type": "function",
@@ -324,11 +363,11 @@
     "inputs": [
       {
         "type": "address",
-        "name": "owner"
+        "name": "owner_"
       },
       {
         "type": "bytes[]",
-        "name": "callbacks"
+        "name": "callbacks_"
       }
     ],
     "outputs": [
@@ -377,60 +416,75 @@
     "inputs": [
       {
         "type": "address",
-        "name": "owner"
+        "name": "owner_"
       },
       {
         "type": "address",
-        "name": "wallet"
+        "name": "wallet_"
       },
       {
         "type": "address",
-        "name": "feeToken"
+        "name": "feeToken_"
       },
       {
         "type": "uint256",
-        "name": "feeAmount"
+        "name": "feeAmount_"
       },
       {
         "type": "address",
-        "name": "to"
+        "name": "to_"
       },
       {
         "type": "uint256",
-        "name": "value"
+        "name": "value_"
       },
       {
         "type": "bytes",
-        "name": "data"
+        "name": "data_"
       },
       {
         "type": "bytes",
-        "name": "signature"
+        "name": "signature_"
       }
     ],
     "outputs": []
   },
   {
     "type": "function",
-    "name": "fundWallet",
-    "constant": false,
-    "stateMutability": "payable",
-    "payable": true,
+    "name": "getUserGasData",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
     "inputs": [
       {
         "type": "address",
-        "name": "owner"
+        "name": "owner_"
       },
       {
         "type": "address",
-        "name": "token"
-      },
-      {
-        "type": "uint256",
-        "name": "amount"
+        "name": "token_"
       }
     ],
-    "outputs": []
+    "outputs": [
+      {
+        "type": "tuple",
+        "name": "gasData",
+        "components": [
+          {
+            "type": "uint256",
+            "name": "totalAmount"
+          },
+          {
+            "type": "uint256",
+            "name": "lockedAmount"
+          },
+          {
+            "type": "uint256",
+            "name": "usedAmount"
+          }
+        ]
+      }
+    ]
   },
   {
     "type": "function",
@@ -450,6 +504,23 @@
         "name": ""
       }
     ]
+  },
+  {
+    "type": "function",
+    "name": "modifyGasTokens",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address[]",
+        "name": "gasTokens_"
+      },
+      {
+        "type": "bool",
+        "name": "enabled_"
+      }
+    ],
+    "outputs": []
   },
   {
     "type": "function",
@@ -496,23 +567,6 @@
       {
         "type": "address",
         "name": "newOwner"
-      }
-    ],
-    "outputs": []
-  },
-  {
-    "type": "function",
-    "name": "updateGasTokens",
-    "constant": false,
-    "payable": false,
-    "inputs": [
-      {
-        "type": "address[]",
-        "name": "gasTokens_"
-      },
-      {
-        "type": "bool",
-        "name": "status"
       }
     ],
     "outputs": []
