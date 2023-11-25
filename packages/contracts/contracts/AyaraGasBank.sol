@@ -22,6 +22,8 @@ contract AyaraGasBank {
         uint256 amount
     );
 
+    event GasTokensModified(address[] tokens, bool enabled);
+
     mapping(address => UserGasData) private userGasData;
     mapping(address => bool) public isGasToken;
 
@@ -42,7 +44,7 @@ contract AyaraGasBank {
         gasData = userGasData[owner_].gasReserves[token_];
     }
 
-    function _updateGasTokens(
+    function _modifyGasTokens(
         address[] memory gasTokens_,
         bool enabled_
     ) internal {
@@ -50,6 +52,7 @@ contract AyaraGasBank {
         for (uint256 i = 0; i < gasTokens_.length; i++) {
             isGasToken[gasTokens_[i]] = enabled_;
         }
+        emit GasTokensModified(gasTokens_, enabled_);
     }
 
     function _transferAndFundWallet(

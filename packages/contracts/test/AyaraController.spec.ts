@@ -176,6 +176,62 @@ describe("AyaraController", function () {
       expect(
         await erc20Mock.balanceOf(await ayaraController.getAddress())
       ).to.equal(ethers.parseEther("1000"));
+
+      // Call function to check the balance of the wallet
+      const userGasData = await ayaraControllerInstance.getUserGasData(
+        await alice.getAddress(),
+        await erc20Mock.getAddress()
+      );
+
+      expect(userGasData.totalAmount).to.equal(ethers.parseEther("1000"));
+      expect(userGasData.usedAmount).to.equal(0);
+      expect(userGasData.lockedAmount).to.equal(0);
+    });
+    it("Should create a new Wallet for Alice and fund with ETH", async function () {
+      const { ayaraController, alice, deployer } = await loadFixture(setup);
+
+      const { walletAddress } = await createWalletAndGetAddress(
+        ayaraController,
+        alice
+      );
+
+      log(`walletAddress: ${walletAddress}`);
+
+      // Whitelist ETH
+      const ayaraControllerInstanceDeployer = ayaraController.connect(deployer);
+      const tx = ayaraControllerInstanceDeployer.modifyGasTokens(
+        [ethers.ZeroAddress],
+        true
+      );
+      expect(tx)
+        .to.emit(ayaraControllerInstanceDeployer, "GasTokensModified")
+        .withArgs([ethers.ZeroAddress], [true]);
+
+      // Fund the wallet
+      const ayaraControllerInstance = ayaraController.connect(alice);
+
+      const tx2 = ayaraControllerInstance.addFundsToWallet(
+        await alice.getAddress(),
+        ethers.ZeroAddress,
+        ethers.parseEther("1")
+      );
+      await expect(tx2)
+        .to.emit(ayaraControllerInstance, "WalletGasFunded")
+        .withArgs(
+          await alice.getAddress(),
+          ethers.ZeroAddress,
+          ethers.parseEther("1")
+        );
+
+      // Call function to check the balance of the wallet
+      const userGasData = await ayaraControllerInstance.getUserGasData(
+        await alice.getAddress(),
+        ethers.ZeroAddress
+      );
+
+      expect(userGasData.totalAmount).to.equal(ethers.parseEther("1"));
+      expect(userGasData.usedAmount).to.equal(0);
+      expect(userGasData.lockedAmount).to.equal(0);
     });
   });
 

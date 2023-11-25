@@ -170,6 +170,22 @@
   {
     "type": "event",
     "anonymous": false,
+    "name": "GasTokensModified",
+    "inputs": [
+      {
+        "type": "address[]",
+        "name": "tokens"
+      },
+      {
+        "type": "bool",
+        "name": "enabled",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
     "name": "OperationExecuted",
     "inputs": [
       {

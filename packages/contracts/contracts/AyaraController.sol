@@ -39,14 +39,14 @@ contract AyaraController is AyaraGasBank, Create2Factory, Ownable {
         chainId = chainId_;
 
         // Initialize gas tokens
-        _updateGasTokens(gasTokens_, true);
+        _modifyGasTokens(gasTokens_, true);
     }
 
     function modifyGasTokens(
         address[] memory gasTokens_,
         bool enabled_
     ) external onlyOwner {
-        _updateGasTokens(gasTokens_, enabled_);
+        _modifyGasTokens(gasTokens_, enabled_);
     }
 
     function createWallet(
