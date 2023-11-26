@@ -33,14 +33,16 @@ export async function formatSignData(
   walletInstance: AyaraWalletInstance,
   data: string
 ) {
-  return ethers.solidityPacked(
-    ["address", "address", "uint256", "uint256", "bytes"],
-    [
-      await walletInstance.ownerAddress(),
-      await walletInstance.controllerAddress(),
-      await walletInstance.chainId(),
-      await walletInstance.nonce(),
-      data,
-    ]
+  return ethers.getBytes(
+    ethers.solidityPacked(
+      ["address", "address", "uint256", "uint256", "bytes"],
+      [
+        await walletInstance.ownerAddress(),
+        await walletInstance.controllerAddress(),
+        await walletInstance.chainId(),
+        await walletInstance.nonce(),
+        data,
+      ]
+    )
   );
 }

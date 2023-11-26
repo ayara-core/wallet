@@ -4,6 +4,8 @@ pragma solidity ^0.8.23;
 import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
+import "hardhat/console.sol";
+
 /**
  * @title AyaraWalletInstance
  * @dev This contract is a wallet instance that supports execution of arbitrary calls.
@@ -49,7 +51,6 @@ contract AyaraWalletInstance {
         if (msg.sender == ownerAddress) {
             _;
         } else {
-            // TODO: ADD CHAIN ID!
             bytes32 hash = MessageHashUtils.toEthSignedMessageHash(
                 abi.encodePacked(
                     ownerAddress,

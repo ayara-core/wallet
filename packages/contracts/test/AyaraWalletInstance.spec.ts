@@ -294,7 +294,7 @@ describe("AyaraController: AyaraWalletInstance", function () {
       ]);
 
       const message = await formatSignData(ayaraWalletInstanceAlice, data);
-      const signature = await alice.signMessage(ethers.getBytes(message));
+      const signature = await alice.signMessage(message);
 
       const ayaraWalletInstanceRelayer = (
         await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
@@ -341,7 +341,7 @@ describe("AyaraController: AyaraWalletInstance", function () {
       ]);
 
       const message = await formatSignData(ayaraWalletInstanceAlice, data);
-      const signature = await relayer.signMessage(ethers.getBytes(message));
+      const signature = await relayer.signMessage(message);
 
       const ayaraWalletInstanceRelayer = (
         await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
@@ -402,7 +402,7 @@ describe("AyaraController: AyaraWalletInstance", function () {
           data,
         ]
       );
-      const signature = await alice.signMessage(ethers.getBytes(message));
+      const signature = await alice.signMessage(message);
 
       const ayaraWalletInstanceRelayer = (
         await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
@@ -454,7 +454,7 @@ describe("AyaraController: AyaraWalletInstance", function () {
       const nonce = await ayaraWalletInstanceAlice.nonce();
 
       const message = await formatSignData(ayaraWalletInstanceAlice, data);
-      const signature = await alice.signMessage(ethers.getBytes(message));
+      const signature = await alice.signMessage(message);
 
       const ayaraWalletInstanceRelayer = (
         await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)

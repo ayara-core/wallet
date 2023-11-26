@@ -92,14 +92,6 @@ contract AyaraGasBank {
         // Check if amount is valid
         if (amount_ == 0) revert InvalidAmount(amount_, msg.value);
 
-        // Check if is ETH or ERC20
-        if (token_ == address(0)) {
-            // ETH already transferred, just fund wallet
-        } else {
-            // Transfer tokens
-            IERC20(token_).safeTransferFrom(msg.sender, address(this), amount_);
-        }
-
         // Update gas data
         userGasData[owner_].gasReserves[token_].usedAmount += amount_;
 
