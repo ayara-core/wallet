@@ -1,20 +1,24 @@
-import logo from './logo.svg';
+import { useEffect, useState} from 'react';
 import './App.css';
-import { useEffect, useState } from "react";
 import { Web3AuthNoModal } from "@web3auth/no-modal";
+import {
+  CHAIN_NAMESPACES,
+  IProvider,
+  WALLET_ADAPTERS,
+} from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
-import { CHAIN_NAMESPACES, IProvider, WALLET_ADAPTERS } from "@web3auth/base";
 import { OpenloginAdapter } from "@web3auth/openlogin-adapter";
-
+import RPC from "./web3RPC"; // for using web3.js
 
 const clientId =
-  "BFroo1J0Yx9-vnNmi1hlf7EiwgBWZx-YdCU0F1yBxzDmKpaQ7t-x34CioYb1oc-3lHM3LeH3mQTu-g0qYSacAHE"; // get from https://dashboard.web3auth.io
+  "BFroo1J0Yx9-vnNmi1hlf7EiwgBWZx-YdCU0F1yBxzDmKpaQ7t-x34CioYb1oc-3lHM3LeH3mQTu-g0qYSacAHE"; 
 
 function App() {
   const [web3auth, setWeb3auth] = useState<Web3AuthNoModal | null>(null);
-  const [provider, setProvider] = useState<IProvider | null>(null);
+  const [provider, setProvider] = useState<IProvider | null>(
+    null
+  );
   const [loggedIn, setLoggedIn] = useState<boolean | null>(false);
-  const [isFullPage, setIsFullPage] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -55,8 +59,6 @@ function App() {
     };
 
     init();
-
-    if (window.innerWidth > 400) setIsFullPage(true);
   }, []);
 
   const login = async () => {
@@ -73,13 +75,14 @@ function App() {
     setProvider(web3authProvider);
   };
 
-  const authenticateUser = async () => {
+  const logout = async () => {
     if (!web3auth) {
       uiConsole("web3auth not initialized yet");
       return;
     }
-    const idToken = await web3auth.authenticateUser();
-    uiConsole(idToken);
+    await web3auth.logout();
+    setProvider(null);
+    setLoggedIn(false);
   };
 
   const getAccounts = async () => {
@@ -89,8 +92,23 @@ function App() {
     }
     const rpc = new RPC(provider);
     const address = await rpc.getAccounts();
-    uiConsole(address);
+    uiConsole('transfer LINK to ' + address);
   };
+
+
+  
+
+  const signMessage = async () => {
+    if (!provider) {
+      uiConsole("provider not initialized yet");
+      return;
+    }
+    const rpc = new RPC(provider);
+    const signedMessage = await rpc.signMessage();
+    uiConsole(signedMessage);
+  };
+
+
 
   function uiConsole(...args: any[]): void {
     const el = document.querySelector("#console>p");
@@ -104,14 +122,22 @@ function App() {
       <div className="flex-container">
         <div>
           <button onClick={getAccounts} className="card">
-            Get Address to top up with Chainlink
+            Top up LINK token
           </button>
         </div>
-      </div>
-      <div className="flex-container">
         <div>
           <button className="card">
-            Get LINK with credit card
+            <a href="https://www.moonpay.com/buy/link" target="_blank" rel="noopener noreferrer">Buy LINK with credit card</a>
+          </button>
+        </div>
+        <div>
+          <button onClick={signMessage} className="card">
+            Sign Message
+          </button>
+        </div>
+        <div>
+          <button onClick={logout} className="card">
+            Log Out
           </button>
         </div>
       </div>
@@ -121,24 +147,31 @@ function App() {
     </>
   );
 
-
+  const unloggedInView = (
+    <>
+        <button onClick={login} className="card login">
+          Create Wallet
+        </button>
+    </>
+  );
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
+    <div className="container">
+      <h1 className="title">
+        Ayara Wallet
+      </h1>
+
+      <div className="grid">{loggedIn ? loggedInView : unloggedInView}</div>
+
+      <footer className="footer">
         <a
-          className="App-link"
-          href="https://reactjs.org"
+          href="https://github.com/ayara-core"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Learn React
+          Ayara Github
         </a>
-      </header>
+      </footer>
     </div>
   );
 }
