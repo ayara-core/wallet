@@ -13,7 +13,7 @@
     ],
     "scripts": {
         "start:contracts": "yarn workspace ayara-contracts run start",
-        "start:app": "yarn workspace ayara-app run dev"
+        "start:app": "yarn workspace ayara-app run start"
     },
     "devDependencies": {
         "@typechain/ethers-v6": "^0.5.1",
