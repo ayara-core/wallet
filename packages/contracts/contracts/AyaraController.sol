@@ -117,7 +117,6 @@ contract AyaraController is AyaraGasBank, Create2Factory, Ownable {
 
         // Validate if fee is required
         if (feeAmount_ > 0) _chargeFee(owner_, feeToken_, feeAmount_);
-        _chargeFee(wallet_, feeToken_, feeAmount_);
 
         // Emit event
         emit OperationExecuted(owner_, wallet_, to_, value_, data_, signature_);
