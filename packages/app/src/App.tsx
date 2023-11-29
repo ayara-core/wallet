@@ -1,24 +1,18 @@
-import { useEffect, useState} from 'react';
-import './App.css';
+import { useEffect, useState } from "react";
+// import './App.css';
 import { Web3AuthNoModal } from "@web3auth/no-modal";
-import {
-  CHAIN_NAMESPACES,
-  IProvider,
-  WALLET_ADAPTERS,
-} from "@web3auth/base";
+import { CHAIN_NAMESPACES, IProvider, WALLET_ADAPTERS } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { OpenloginAdapter } from "@web3auth/openlogin-adapter";
 import RPC from "./web3RPC"; // for using web3.js
 
 const clientId =
-  "BFroo1J0Yx9-vnNmi1hlf7EiwgBWZx-YdCU0F1yBxzDmKpaQ7t-x34CioYb1oc-3lHM3LeH3mQTu-g0qYSacAHE"; 
+  "BFroo1J0Yx9-vnNmi1hlf7EiwgBWZx-YdCU0F1yBxzDmKpaQ7t-x34CioYb1oc-3lHM3LeH3mQTu-g0qYSacAHE";
 
 function App() {
   const [web3auth, setWeb3auth] = useState<Web3AuthNoModal | null>(null);
-  const [provider, setProvider] = useState<IProvider | null>(
-    null
-  );
-  const [loggedIn, setLoggedIn] = useState<boolean | null>(false);
+  const [provider, setProvider] = useState<IProvider | null>(null);
+  const [output, setOutput] = useState<string>("");
 
   useEffect(() => {
     const init = async () => {
@@ -40,7 +34,9 @@ function App() {
 
         setWeb3auth(web3auth);
 
-        const privateKeyProvider = new EthereumPrivateKeyProvider({ config: { chainConfig } });
+        const privateKeyProvider = new EthereumPrivateKeyProvider({
+          config: { chainConfig },
+        });
 
         const openloginAdapter = new OpenloginAdapter({
           privateKeyProvider,
@@ -50,9 +46,6 @@ function App() {
 
         await web3auth.init();
         setProvider(web3auth.provider);
-        if (web3auth.connected) {
-          setLoggedIn(true);
-        }
       } catch (error) {
         console.error(error);
       }
@@ -82,7 +75,6 @@ function App() {
     }
     await web3auth.logout();
     setProvider(null);
-    setLoggedIn(false);
   };
 
   const getAccounts = async () => {
@@ -92,11 +84,8 @@ function App() {
     }
     const rpc = new RPC(provider);
     const address = await rpc.getAccounts();
-    uiConsole('transfer LINK to ' + address);
+    uiConsole("transfer LINK to " + address);
   };
-
-
-  
 
   const signMessage = async () => {
     if (!provider) {
@@ -108,60 +97,59 @@ function App() {
     uiConsole(signedMessage);
   };
 
-
-
   function uiConsole(...args: any[]): void {
-    const el = document.querySelector("#console>p");
-    if (el) {
-      el.innerHTML = JSON.stringify(args || {}, null, 2);
-    }
+    setOutput(JSON.stringify(args));
   }
 
   const loggedInView = (
-    <>
-      <div className="flex-container">
-        <div>
-          <button onClick={getAccounts} className="card">
-            Top up LINK token
-          </button>
-        </div>
-        <div>
-          <button className="card">
-            <a href="https://www.moonpay.com/buy/link" target="_blank" rel="noopener noreferrer">Buy LINK with credit card</a>
-          </button>
-        </div>
-        <div>
-          <button onClick={signMessage} className="card">
-            Sign Message
-          </button>
-        </div>
-        <div>
-          <button onClick={logout} className="card">
-            Log Out
-          </button>
-        </div>
+    <div className="flex flex-col">
+      <button className="btn btn-primary" onClick={getAccounts}>
+        Top up LINK token
+      </button>
+      <div className="join join-vertical py-8">
+        <a
+          className="btn btn-secondary join-item"
+          href="https://www.moonpay.com/buy/link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Buy LINK with credit card
+        </a>
+        <button className="btn btn-secondary join-item" onClick={signMessage}>
+          Sign Message
+        </button>
+        <button className="btn btn-secondary join-item" onClick={logout}>
+          Log Out
+        </button>
       </div>
-      <div id="console" style={{ whiteSpace: "pre-line" }}>
-        <p style={{ whiteSpace: "pre-line" }}>Login Successful</p>
-      </div>
-    </>
+    </div>
   );
 
   const unloggedInView = (
     <>
-        <button onClick={login} className="card login">
-          Create Wallet
-        </button>
+      <button className="btn btn-primary" onClick={login}>
+        Create Wallet
+      </button>
     </>
   );
 
   return (
-    <div className="container">
-      <h1 className="title">
-        Ayara Wallet
-      </h1>
-
-      <div className="grid">{loggedIn ? loggedInView : unloggedInView}</div>
+    <div data-theme="forest">
+      <div className="hero min-h-screen bg-base-200">
+        <div className="flex flex-col hero-content text-center">
+          <h1 className="text-5xl font-bold py-6">AYARA</h1>
+          <div className="max-w-md">
+            {web3auth && web3auth.connected ? loggedInView : unloggedInView}
+          </div>
+          <div className="card w-96 bg-primary text-primary-content">
+            <div className="card-body">
+            <h2 className="card-title">Result</h2>
+              <p className="overflow-y-auto">{output}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* <h1 className="text-xl">Ayara Wallet</h1>
 
       <footer className="footer">
         <a
@@ -171,7 +159,7 @@ function App() {
         >
           Ayara Github
         </a>
-      </footer>
+      </footer> */}
     </div>
   );
 }
