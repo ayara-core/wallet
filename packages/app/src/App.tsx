@@ -19,10 +19,10 @@ function App() {
       try {
         const chainConfig = {
           chainNamespace: CHAIN_NAMESPACES.EIP155,
-          chainId: "0x1",
-          rpcTarget: "https://rpc.ankr.com/eth",
-          displayName: "Ethereum Mainnet",
-          blockExplorer: "https://goerli.etherscan.io",
+          chainId: "0xa",
+          rpcTarget: "https://mainnet.optimism.io",
+          displayName: "Optimism Mainnet",
+          blockExplorer: "https://optimistic.etherscan.io",
           ticker: "ETH",
           tickerName: "Ethereum",
         };
