@@ -5,55 +5,59 @@ import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 library SignatureValidator {
-    error InvalidOwnerSignature();
-    error InvalidClaimerSignature();
+    error InvalidSignature();
 
-    // function validateSignatures(
-    // ) internal view returns (bool) {
-    //     bytes32 messageHashOwner = MessageHashUtils.toEthSignedMessageHash(
-    //         keccak256(
-    //             abi.encodePacked(
-    //                 data.tokenId,
-    //                 data.claimer,
-    //                 registryChainId,
-    //                 salt,
-    //                 addr
-    //             )
-    //         )
-    //     );
+    function DOMAIN_SEPARATOR(uint256 chainId) public view returns (bytes32) {
+        return
+            keccak256(
+                abi.encode(
+                    keccak256(
+                        "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+                    ),
+                    keccak256(bytes("Ayara")),
+                    keccak256(bytes("1")),
+                    chainId,
+                    address(this)
+                )
+            );
+    }
 
-    //     if (
-    //         !SignatureChecker.isValidSignatureNow(
-    //             claimPublicKey,
-    //             messageHashOwner,
-    //             data.sigOwner
-    //         )
-    //     ) {
-    //         revert InvalidOwnerSignature();
-    //     }
+    function STRUCT_TYPEHASH() public pure returns (bytes32) {
+        return
+            keccak256(
+                "Transaction(address ownerAddress,address controllerAddress,uint256 nonce,bytes32 data)"
+            );
+    }
 
-    //     bytes32 messageHashClaimer = MessageHashUtils.toEthSignedMessageHash(
-    //         keccak256(
-    //             abi.encodePacked(
-    //                 data.tokenId,
-    //                 data.maxRefundValue,
-    //                 registryChainId,
-    //                 salt,
-    //                 addr
-    //             )
-    //         )
-    //     );
+    function validateSignature(
+        bytes memory data,
+        bytes memory signature,
+        uint256 chainId,
+        address ownerAddress,
+        address controllerAddress,
+        uint256 nonce
+    ) internal view returns (bool) {
+        bytes32 messageHashClaimer = MessageHashUtils.toTypedDataHash(
+            DOMAIN_SEPARATOR(chainId),
+            keccak256(
+                abi.encode(
+                    STRUCT_TYPEHASH(),
+                    ownerAddress,
+                    controllerAddress,
+                    nonce,
+                    keccak256(data)
+                )
+            )
+        );
 
-    //     if (
-    //         !SignatureChecker.isValidSignatureNow(
-    //             data.claimer,
-    //             messageHashClaimer,
-    //             data.sigClaimer
-    //         )
-    //     ) {
-    //         revert InvalidClaimerSignature();
-    //     }
+        if (
+            !SignatureChecker.isValidSignatureNow(
+                ownerAddress,
+                messageHashClaimer,
+                signature
+            )
+        ) revert InvalidSignature();
 
-    //     return true;
-    // }
+        return true;
+    }
 }

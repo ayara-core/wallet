@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
-import "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+import "./lib/SignatureValidator.sol";
 
 import "hardhat/console.sol";
 
@@ -45,30 +44,20 @@ contract AyaraWalletInstance {
      * @dev Modifier that checks if the sender is the owner or has a valid signature.
      */
     modifier onlyOwnerOrValidSignature(
-        bytes memory signature,
-        bytes memory data
+        bytes memory data,
+        bytes memory signature
     ) {
         if (msg.sender == ownerAddress) {
             _;
         } else {
-            bytes32 hash = MessageHashUtils.toEthSignedMessageHash(
-                abi.encodePacked(
-                    ownerAddress,
-                    controllerAddress,
-                    chainId,
-                    nonce,
-                    data
-                )
+            SignatureValidator.validateSignature(
+                data,
+                signature,
+                chainId,
+                ownerAddress,
+                controllerAddress,
+                nonce
             );
-
-            if (
-                !SignatureChecker.isValidSignatureNow(
-                    ownerAddress,
-                    hash,
-                    signature
-                )
-            ) revert InvalidSignature();
-
             _;
         }
     }
@@ -84,7 +73,7 @@ contract AyaraWalletInstance {
     )
         external
         payable
-        onlyOwnerOrValidSignature(signature, data)
+        onlyOwnerOrValidSignature(data, signature)
         returns (bool, bytes memory)
     {
         // Check that the contract has enough balance to execute the call

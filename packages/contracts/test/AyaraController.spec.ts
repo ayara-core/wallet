@@ -6,8 +6,9 @@ import { getSystemConfig } from "../utils/deployConfig";
 import { deploySystem } from "../scripts/deploy";
 import { getCommonSigners } from "../utils/signers";
 import { logger } from "../utils/deployUtils";
+import { generateSignature } from "../utils/signature";
 
-import { createWalletAndGetAddress, formatSignData } from "./test-utils";
+import { createWalletAndGetAddress } from "./test-utils";
 
 // Initialize logger for test logs
 const log = logger("log", "test");
@@ -318,8 +319,17 @@ describe("AyaraController", function () {
         ethers.parseEther("100"),
       ]);
 
-      const message = await formatSignData(walletInstance, data);
-      const signature = await alice.signMessage(message);
+      const signature = await generateSignature(
+        alice,
+        CHAIN_ID,
+        await walletInstance.getAddress(),
+        {
+          ownerAddress: await alice.getAddress(),
+          controllerAddress: await ayaraController.getAddress(),
+          nonce: await walletInstance.nonce(),
+          data,
+        }
+      );
 
       // Send a tx via the wallet, which should update the gas usage
       const ayaraControllerInstanceRelayer = ayaraController.connect(deployer);
