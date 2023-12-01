@@ -13,10 +13,6 @@
         "name": "salt_"
       },
       {
-        "type": "uint256",
-        "name": "chainId_"
-      },
-      {
         "type": "address[]",
         "name": "gasTokens_"
       }

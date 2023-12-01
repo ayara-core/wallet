@@ -32,11 +32,10 @@ contract AyaraController is AyaraGasBank, Create2Factory, Ownable {
     constructor(
         address proxyAdmin_,
         uint256 salt_,
-        uint256 chainId_,
         address[] memory gasTokens_
     ) Ownable(proxyAdmin_) {
         salt = bytes32(salt_);
-        chainId = chainId_;
+        chainId = block.chainid;
 
         // Initialize gas tokens
         _modifyGasTokens(gasTokens_, true);

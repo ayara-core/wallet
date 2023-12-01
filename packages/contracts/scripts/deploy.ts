@@ -101,7 +101,6 @@ export async function deploySystem(
   >(hre, new AyaraController__factory(), create2Factory, "AyaraController", [
     await signer.getAddress(),
     ayaraConfig.salt,
-    hre.network.config.chainId,
     [],
   ]);
 
