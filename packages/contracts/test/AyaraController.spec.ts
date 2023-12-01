@@ -113,7 +113,8 @@ describe("AyaraController", function () {
       const tx2 = ayaraControllerInstance.addFundsToWallet(
         await alice.getAddress(),
         await erc20Mock.getAddress(),
-        ethers.parseEther("1000")
+        ethers.parseEther("1000"),
+        []
       );
       expect(tx2).to.revertedWithCustomError(
         ayaraControllerInstance,
@@ -164,7 +165,8 @@ describe("AyaraController", function () {
       const tx4 = ayaraControllerInstance.addFundsToWallet(
         await alice.getAddress(),
         await erc20Mock.getAddress(),
-        ethers.parseEther("1000")
+        ethers.parseEther("1000"),
+        []
       );
       await expect(tx4)
         .to.emit(ayaraControllerInstance, "WalletGasFunded")
@@ -213,7 +215,8 @@ describe("AyaraController", function () {
       const tx2 = ayaraControllerInstance.addFundsToWallet(
         await alice.getAddress(),
         ethers.ZeroAddress,
-        ethers.parseEther("1")
+        ethers.parseEther("1"),
+        []
       );
       await expect(tx2)
         .to.emit(ayaraControllerInstance, "WalletGasFunded")
@@ -277,7 +280,8 @@ describe("AyaraController", function () {
       const tx5 = await ayaraControllerInstance.addFundsToWallet(
         await alice.getAddress(),
         await erc20Mock.getAddress(),
-        ethers.parseEther("500")
+        ethers.parseEther("500"),
+        []
       );
       await tx5.wait();
 

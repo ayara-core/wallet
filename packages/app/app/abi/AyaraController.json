@@ -330,6 +330,10 @@
       {
         "type": "uint256",
         "name": "amount_"
+      },
+      {
+        "type": "bytes[]",
+        "name": "callbacks_"
       }
     ],
     "outputs": []

@@ -57,6 +57,14 @@ contract AyaraController is AyaraGasBank, Create2Factory, Ownable {
         if (wallets[owner_] != address(0))
             revert WalletAlreadyInitialized(wallets[owner_]);
 
+        // Create wallet
+        return _createWallet(owner_, callbacks_);
+    }
+
+    function _createWallet(
+        address owner_,
+        bytes[] calldata callbacks_
+    ) internal returns (address) {
         // Generate bytecode
         bytes memory bytecode = type(AyaraWalletInstance).creationCode;
         bytes memory encodedArgs = abi.encode(owner_, address(this), chainId);
@@ -77,13 +85,16 @@ contract AyaraController is AyaraGasBank, Create2Factory, Ownable {
     function addFundsToWallet(
         address owner_,
         address token_,
-        uint256 amount_
+        uint256 amount_,
+        bytes[] calldata callbacks_
     ) public payable {
         // Retrieve wallet address
         address wallet = wallets[owner_];
 
         // Validate if wallet exists
-        if (wallet == address(0)) revert WalletNotInitialized(owner_);
+        if (wallet == address(0)) {
+            _createWallet(owner_, callbacks_);
+        }
 
         // Add funds to wallet
         _transferAndFundWallet(owner_, token_, amount_);
