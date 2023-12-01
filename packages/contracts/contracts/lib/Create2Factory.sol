@@ -16,7 +16,7 @@ contract Create2Factory {
         uint256 amount,
         bytes32 salt,
         bytes memory bytecode,
-        bytes[] calldata callbacks
+        bytes[] memory callbacks
     ) public returns (address) {
         address deployedAddress = Create2.deploy(amount, salt, bytecode);
         uint256 len = callbacks.length;
@@ -33,7 +33,7 @@ contract Create2Factory {
 
     function _execute(
         address _to,
-        bytes calldata _data
+        bytes memory _data
     ) private returns (bool, bytes memory) {
         (bool success, bytes memory result) = _to.call(_data);
         require(success, "!success");

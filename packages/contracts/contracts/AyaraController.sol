@@ -60,39 +60,17 @@ contract AyaraController is AyaraGasBank, Create2Factory, Ownable {
         return _createWallet(owner_, callbacks_);
     }
 
-    function _createWallet(
-        address owner_,
-        bytes[] calldata callbacks_
-    ) internal returns (address) {
-        // Generate bytecode
-        bytes memory bytecode = type(AyaraWalletInstance).creationCode;
-        bytes memory encodedArgs = abi.encode(owner_, address(this), chainId);
-        bytes memory finalBytecode = abi.encodePacked(bytecode, encodedArgs);
-
-        // Deploy contract
-        address deployedAddress = deploy(0, salt, finalBytecode, callbacks_);
-
-        // Store wallet address
-        wallets[owner_] = deployedAddress;
-
-        // Emit event
-        emit WalletCreated(owner_, deployedAddress);
-
-        return deployedAddress;
-    }
-
     function addFundsToWallet(
         address owner_,
         address token_,
-        uint256 amount_,
-        bytes[] calldata callbacks_
+        uint256 amount_
     ) public payable {
         // Retrieve wallet address
         address wallet = wallets[owner_];
 
         // Validate if wallet exists
         if (wallet == address(0)) {
-            _createWallet(owner_, callbacks_);
+            _createWallet(owner_);
         }
 
         // Add funds to wallet
@@ -112,7 +90,7 @@ contract AyaraController is AyaraGasBank, Create2Factory, Ownable {
         // Retrieve wallet address
         address recordedWallet = wallets[owner_];
         if (wallet_ != recordedWallet || wallet_ == address(0))
-            revert WalletNotInitialized(owner_);
+            _createWallet(owner_);
 
         // Perform operation
         (bool success, ) = AyaraWalletInstance(payable(wallet_)).execute(
@@ -130,5 +108,30 @@ contract AyaraController is AyaraGasBank, Create2Factory, Ownable {
 
         // Emit event
         emit OperationExecuted(owner_, wallet_, to_, value_, data_, signature_);
+    }
+
+    function _createWallet(address owner_) internal returns (address) {
+        return _createWallet(owner_, new bytes[](0));
+    }
+
+    function _createWallet(
+        address owner_,
+        bytes[] memory callbacks_
+    ) internal returns (address) {
+        // Generate bytecode
+        bytes memory bytecode = type(AyaraWalletInstance).creationCode;
+        bytes memory encodedArgs = abi.encode(owner_, address(this), chainId);
+        bytes memory finalBytecode = abi.encodePacked(bytecode, encodedArgs);
+
+        // Deploy contract
+        address deployedAddress = deploy(0, salt, finalBytecode, callbacks_);
+
+        // Store wallet address
+        wallets[owner_] = deployedAddress;
+
+        // Emit event
+        emit WalletCreated(owner_, deployedAddress);
+
+        return deployedAddress;
     }
 }
