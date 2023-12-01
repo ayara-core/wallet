@@ -24,7 +24,8 @@ export interface MocksDeployed {
 
 export interface SystemDeployed {
   create2Factory: Create2Factory;
-  ayaraController: AyaraController;
+  ayaraControllerPrimary: AyaraController;
+  ayaraControllerSecondary?: AyaraController;
   mocks: MocksDeployed;
 }
 
@@ -95,19 +96,62 @@ export async function deploySystem(
     deploymentOverrides
   );
 
-  const ayaraController = await deployContractWithCreate2<
+  const deployCreate2Options = {
+    overrides: deploymentOverrides,
+    create2Options: { amount: 0, salt: "salty", callbacks: [] },
+    waitForBlocks: 0,
+  };
+
+  const withSalt = (salt: string) => ({
+    ...deployCreate2Options,
+    create2Options: { ...deployCreate2Options.create2Options, salt },
+  });
+
+  const ayaraControllerPrimary = await deployContractWithCreate2<
     AyaraController,
     AyaraController__factory
-  >(hre, new AyaraController__factory(), create2Factory, "AyaraController", [
-    await signer.getAddress(),
-    ayaraConfig.salt,
-    [],
-  ]);
+  >(
+    hre,
+    new AyaraController__factory(),
+    create2Factory,
+    "AyaraController",
+    [
+      await signer.getAddress(),
+      ayaraConfig.salt,
+      hre.network.config.chainId,
+      [],
+    ],
+    withSalt("AyaraControllerPrimary")
+  );
+
+  let ayaraControllerSecondary: AyaraController | undefined;
+
+  if (hre.network.name === "hardhat" || hre.network.name === "localhost") {
+    ayaraControllerSecondary = await deployContractWithCreate2<
+      AyaraController,
+      AyaraController__factory
+    >(
+      hre,
+      new AyaraController__factory(),
+      create2Factory,
+      "AyaraController",
+      [
+        await signer.getAddress(),
+        ayaraConfig.salt,
+        hre.network.config.chainId ?? 10 + 1,
+        [],
+      ],
+      withSalt("AyaraControllerSecondary")
+    );
+  }
 
   const mocks = await deployMocks(hre, signer, create2Factory);
   return {
     create2Factory,
-    ayaraController,
+    ayaraControllerPrimary,
+    ayaraControllerSecondary: ayaraControllerSecondary
+      ? ayaraControllerSecondary
+      : undefined,
     mocks,
   };
 }

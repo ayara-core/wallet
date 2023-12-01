@@ -9,7 +9,6 @@ import "./lib/Create2Factory.sol";
 
 contract AyaraController is AyaraGasBank, Create2Factory, Ownable {
     error WalletAlreadyInitialized(address wallet);
-    error WalletNotInitialized(address owner);
     error OperationFailed();
 
     uint256 public constant VERSION = 1;
@@ -32,10 +31,11 @@ contract AyaraController is AyaraGasBank, Create2Factory, Ownable {
     constructor(
         address proxyAdmin_,
         uint256 salt_,
+        uint256 chainId_,
         address[] memory gasTokens_
     ) Ownable(proxyAdmin_) {
         salt = bytes32(salt_);
-        chainId = block.chainid;
+        chainId = chainId_;
 
         // Initialize gas tokens
         _modifyGasTokens(gasTokens_, true);

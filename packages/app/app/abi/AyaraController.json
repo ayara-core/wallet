@@ -13,6 +13,10 @@
         "name": "salt_"
       },
       {
+        "type": "uint256",
+        "name": "chainId_"
+      },
+      {
         "type": "address[]",
         "name": "gasTokens_"
       }
@@ -133,16 +137,6 @@
       {
         "type": "address",
         "name": "wallet"
-      }
-    ]
-  },
-  {
-    "type": "error",
-    "name": "WalletNotInitialized",
-    "inputs": [
-      {
-        "type": "address",
-        "name": "owner"
       }
     ]
   },

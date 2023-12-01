@@ -27,7 +27,7 @@ describe("AyaraController: AyaraWalletInstance", function () {
     const { alice, bob, deployer, relayer } = await getCommonSigners(hre);
 
     const {
-      ayaraController,
+      ayaraControllerPrimary: ayaraController,
       mocks: { erc20Mock },
     } = await deploySystem(hre, deployer, systemConfig);
     return { alice, bob, deployer, relayer, ayaraController, erc20Mock };
