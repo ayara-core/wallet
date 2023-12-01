@@ -297,13 +297,8 @@ describe("AyaraController: AyaraWalletInstance", function () {
       const signature = await generateSignature(
         alice,
         CHAIN_ID,
-        await ayaraWalletInstanceAlice.getAddress(),
-        {
-          ownerAddress: await alice.getAddress(),
-          controllerAddress: await ayaraWalletInstanceAlice.controllerAddress(),
-          nonce: await ayaraWalletInstanceAlice.nonce(),
-          data,
-        }
+        ayaraWalletInstanceAlice,
+        data
       );
 
       const ayaraWalletInstanceRelayer = (
@@ -353,13 +348,8 @@ describe("AyaraController: AyaraWalletInstance", function () {
       const signature = await generateSignature(
         relayer,
         CHAIN_ID,
-        await ayaraWalletInstanceAlice.controllerAddress(),
-        {
-          ownerAddress: await ayaraWalletInstanceAlice.ownerAddress(),
-          controllerAddress: await ayaraWalletInstanceAlice.controllerAddress(),
-          nonce: await ayaraWalletInstanceAlice.nonce(),
-          data,
-        }
+        ayaraWalletInstanceAlice,
+        data
       );
 
       const ayaraWalletInstanceRelayer = (
@@ -414,13 +404,9 @@ describe("AyaraController: AyaraWalletInstance", function () {
       const signature = await generateSignature(
         alice,
         CHAIN_ID,
-        await ayaraWalletInstanceAlice.controllerAddress(),
-        {
-          ownerAddress: await ayaraWalletInstanceAlice.ownerAddress(),
-          controllerAddress: await ayaraWalletInstanceAlice.controllerAddress(),
-          nonce: nonce + 1n,
-          data,
-        }
+        ayaraWalletInstanceAlice,
+        data,
+        { nonce: nonce + 1n }
       );
 
       const ayaraWalletInstanceRelayer = (
@@ -474,13 +460,8 @@ describe("AyaraController: AyaraWalletInstance", function () {
       const signature = await generateSignature(
         alice,
         CHAIN_ID,
-        await ayaraWalletInstanceAlice.getAddress(),
-        {
-          ownerAddress: await ayaraWalletInstanceAlice.ownerAddress(),
-          controllerAddress: await ayaraWalletInstanceAlice.controllerAddress(),
-          nonce: await ayaraWalletInstanceAlice.nonce(),
-          data,
-        }
+        ayaraWalletInstanceAlice,
+        data
       );
 
       const ayaraWalletInstanceRelayer = (
@@ -502,13 +483,9 @@ describe("AyaraController: AyaraWalletInstance", function () {
       const signature2 = await generateSignature(
         alice,
         CHAIN_ID,
-        await ayaraWalletInstanceAlice.getAddress(),
-        {
-          ownerAddress: await ayaraWalletInstanceAlice.ownerAddress(),
-          controllerAddress: await ayaraWalletInstanceAlice.controllerAddress(),
-          nonce: nonce2 - 1n,
-          data,
-        }
+        ayaraWalletInstanceAlice,
+        data,
+        { nonce: 0n }
       );
 
       const tx3 = ayaraWalletInstanceRelayer.execute(

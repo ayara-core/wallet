@@ -322,13 +322,8 @@ describe("AyaraController", function () {
       const signature = await generateSignature(
         alice,
         CHAIN_ID,
-        await walletInstance.getAddress(),
-        {
-          ownerAddress: await alice.getAddress(),
-          controllerAddress: await ayaraController.getAddress(),
-          nonce: await walletInstance.nonce(),
-          data,
-        }
+        walletInstance,
+        data
       );
 
       // Send a tx via the wallet, which should update the gas usage

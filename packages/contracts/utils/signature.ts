@@ -1,6 +1,8 @@
 import type { Signer } from "ethers";
 import { ethers } from "hardhat";
 
+import type { AyaraWalletInstance } from "../typechain-types";
+
 const DOMAIN_TYPE = {
   name: "Ayara",
   version: "1",
@@ -36,15 +38,25 @@ interface Message {
 export async function generateSignature(
   signer: Signer,
   chainId: number | bigint,
-  verifyingContract: string,
-  message: Message
+  ayaraWalletInstance: AyaraWalletInstance,
+  data: string,
+  overrides?: any
 ) {
-  const domain = generateDomainData(chainId, verifyingContract);
+  const domain = generateDomainData(
+    chainId,
+    await ayaraWalletInstance.getAddress()
+  );
   const types = TYPES;
-  const toSignMessage = {
-    ...message,
-    data: ethers.keccak256(message.data),
+  let toSignMessage = {
+    ownerAddress: await signer.getAddress(),
+    controllerAddress: await ayaraWalletInstance.controllerAddress(),
+    nonce: await ayaraWalletInstance.nonce(),
+    data: ethers.keccak256(data),
   };
+
+  if (overrides) {
+    toSignMessage = { ...toSignMessage, ...overrides };
+  }
 
   return signer.signTypedData(domain, types, toSignMessage);
 }
