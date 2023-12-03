@@ -9,14 +9,14 @@
 	"action": {
 		"default_popup": "index.html",
 		"default_icon": {
-			"16": "/icon-w3a.png",
-			"48": "/icon-w3a.png",
-			"128": "/icon-w3a.png"
+			"16": "/icon-ayara.png",
+			"48": "/icon-ayara.png",
+			"128": "/icon-ayara.png"
 		}
 	},
 	"icons": {
-		"16": "/icon-w3a.png",
-		"48": "/icon-w3a.png",
-		"128": "/icon-w3a.png"
+		"16": "/icon-ayara.png",
+		"48": "/icon-ayara.png",
+		"128": "/icon-ayara.png"
 	}
 }
