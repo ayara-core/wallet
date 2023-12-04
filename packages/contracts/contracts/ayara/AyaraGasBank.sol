@@ -4,7 +4,9 @@ pragma solidity ^0.8.23;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract AyaraGasBank {
+import "../lib/Structs.sol";
+
+contract AyaraGasBank is Ownable {
     using SafeERC20 for IERC20;
 
     error NotApprovedGasToken(address token);
@@ -37,11 +39,26 @@ contract AyaraGasBank {
         uint256 usedAmount;
     }
 
+    constructor(
+        address[] memory gasTokens_,
+        address initialOwner_
+    ) Ownable(initialOwner_) {
+        // Initialize gas tokens
+        _modifyGasTokens(gasTokens_, true);
+    }
+
     function getUserGasData(
         address owner_,
         address token_
     ) external view returns (GasData memory gasData) {
         gasData = userGasData[owner_].gasReserves[token_];
+    }
+
+    function modifyGasTokens(
+        address[] memory gasTokens_,
+        bool enabled_
+    ) external onlyOwner {
+        _modifyGasTokens(gasTokens_, enabled_);
     }
 
     function _modifyGasTokens(
@@ -81,21 +98,20 @@ contract AyaraGasBank {
         emit WalletGasFunded(owner_, token_, amount_);
     }
 
-    function _chargeFee(
-        address owner_,
-        address token_,
-        uint256 amount_
-    ) internal {
+    function _chargeFee(address owner_, FeeData memory feeData_) internal {
         // Check if token is approved
-        if (!isGasToken[token_]) revert NotApprovedGasToken(token_);
+        if (!isGasToken[feeData_.token])
+            revert NotApprovedGasToken(feeData_.token);
 
         // Check if amount is valid
-        if (amount_ == 0) revert InvalidAmount(amount_, msg.value);
+        if (feeData_.amount == 0)
+            revert InvalidAmount(feeData_.amount, msg.value);
 
         // Update gas data
-        userGasData[owner_].gasReserves[token_].usedAmount += amount_;
+        userGasData[owner_].gasReserves[feeData_.token].usedAmount += feeData_
+            .amount;
 
         // Emit event
-        emit WalletGasCharged(owner_, token_, amount_);
+        emit WalletGasCharged(owner_, feeData_.token, feeData_.amount);
     }
 }

@@ -321,16 +321,24 @@ describe("AyaraController", function () {
       // Send a tx via the wallet, which should update the gas usage
       const ayaraControllerInstanceRelayer = ayaraController.connect(deployer);
 
+      const feeData = {
+        token: await erc20Mock.getAddress(),
+        amount: ethers.parseEther("1"),
+      };
+
+      const transaction = {
+        destinationChainId: CHAIN_ID,
+        to: await erc20Mock.getAddress(),
+        value: 0,
+        data: data,
+        signature: signature,
+      };
+
       const tx = ayaraControllerInstanceRelayer.executeUserOperation(
         await alice.getAddress(),
         await walletInstance.getAddress(),
-        await erc20Mock.getAddress(),
-        ethers.parseEther("1"),
-        CHAIN_ID,
-        await erc20Mock.getAddress(),
-        0,
-        data,
-        signature
+        feeData,
+        transaction
       );
       await expect(tx)
         .to.emit(ayaraControllerInstanceRelayer, "OperationExecuted")

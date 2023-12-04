@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "./lib/SignatureValidator.sol";
+import "../lib/SignatureValidator.sol";
 
 import "hardhat/console.sol";
 

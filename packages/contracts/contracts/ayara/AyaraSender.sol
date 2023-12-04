@@ -4,7 +4,7 @@ pragma solidity ^0.8.23;
 import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 
-import "./MessageStruct.sol";
+import "../lib/Structs.sol";
 
 contract AyaraSender {
     enum PayFeesIn {

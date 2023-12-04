@@ -176,17 +176,26 @@ describe("AyaraController", function () {
       );
 
       // Send the transaction
+      const feeData = {
+        token: ethers.ZeroAddress, // Fee Token
+        amount: 0, // Fee Amount
+      };
+
+      const transaction = {
+        destinationChainId: config.ayaraInstances.optimism.chainId, // Destination ChainId
+        to: await erc20Mock.getAddress(), // Destination Contract
+        value: 0, // Value
+        data: data, // Data
+        signature: signature, // Signature
+      };
+
       const tx = ayaraController.executeUserOperation(
         aliceAddress,
         walletAddressMain,
-        ethers.ZeroAddress, // Fee Token
-        0, // Fee Amount
-        config.ayaraInstances.optimism.chainId, // Destination ChainId
-        await erc20Mock.getAddress(), // Destination Contract
-        0, // Value
-        data, // Data
-        signature // Signature
+        feeData,
+        transaction
       );
+
       await expect(tx)
         .to.emit(ayaraController, "MessageSent")
         .and.to.emit(ccipRouterMock, "MessageSent")

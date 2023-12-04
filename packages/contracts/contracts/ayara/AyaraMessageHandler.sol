@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "./lib/AyaraReceiver.sol";
-import "./lib/AyaraSender.sol";
+import "./AyaraReceiver.sol";
+import "./AyaraSender.sol";
 
-contract AyaraMessenger is AyaraSender, AyaraReceiver {
+contract AyaraMessageHandler is AyaraSender, AyaraReceiver {
     mapping(uint64 => uint64) public chainIdToChainSelector;
 
     constructor(
@@ -21,9 +21,9 @@ contract AyaraMessenger is AyaraSender, AyaraReceiver {
     }
 
     function _routeMessage(
-        uint64 destinationChainId,
         address owner_,
         address wallet,
+        uint64 destinationChainId,
         address to_,
         bytes memory data_,
         bytes memory signature_

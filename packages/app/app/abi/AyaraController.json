@@ -6,7 +6,7 @@
     "inputs": [
       {
         "type": "address",
-        "name": "proxyAdmin_"
+        "name": "initialOwner_"
       },
       {
         "type": "bytes32",
@@ -655,32 +655,44 @@
         "name": "wallet_"
       },
       {
-        "type": "address",
-        "name": "feeToken_"
+        "type": "tuple",
+        "name": "feeData_",
+        "components": [
+          {
+            "type": "address",
+            "name": "token"
+          },
+          {
+            "type": "uint256",
+            "name": "amount"
+          }
+        ]
       },
       {
-        "type": "uint256",
-        "name": "feeAmount_"
-      },
-      {
-        "type": "uint64",
-        "name": "destinationChainId_"
-      },
-      {
-        "type": "address",
-        "name": "to_"
-      },
-      {
-        "type": "uint256",
-        "name": "value_"
-      },
-      {
-        "type": "bytes",
-        "name": "data_"
-      },
-      {
-        "type": "bytes",
-        "name": "signature_"
+        "type": "tuple",
+        "name": "transaction_",
+        "components": [
+          {
+            "type": "uint64",
+            "name": "destinationChainId"
+          },
+          {
+            "type": "address",
+            "name": "to"
+          },
+          {
+            "type": "uint256",
+            "name": "value"
+          },
+          {
+            "type": "bytes",
+            "name": "data"
+          },
+          {
+            "type": "bytes",
+            "name": "signature"
+          }
+        ]
       }
     ],
     "outputs": []
