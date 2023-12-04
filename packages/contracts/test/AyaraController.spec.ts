@@ -17,7 +17,7 @@ const log = logger("log", "test");
 const systemConfig = getSystemConfig(hre);
 
 describe("AyaraController", function () {
-  const CHAIN_ID = 31337;
+  const CHAIN_ID = 11155111;
   // This fixture deploys the contract and returns it
   const setup = async () => {
     // Get signers
@@ -40,9 +40,6 @@ describe("AyaraController", function () {
       expect(await ayaraControllerInstance.getAddress()).to.be.properAddress;
 
       expect(await ayaraControllerInstance.VERSION()).to.equal(1);
-      expect(await ayaraControllerInstance.salt()).to.equal(
-        systemConfig.ayaraConfig.salt
-      );
       expect(await ayaraControllerInstance.chainId()).to.equal(CHAIN_ID);
 
       const adminAddress = await ayaraControllerInstance.owner();
@@ -319,12 +316,7 @@ describe("AyaraController", function () {
         ethers.parseEther("100"),
       ]);
 
-      const signature = await generateSignature(
-        alice,
-        CHAIN_ID,
-        walletInstance,
-        data
-      );
+      const signature = await generateSignature(alice, walletInstance, data);
 
       // Send a tx via the wallet, which should update the gas usage
       const ayaraControllerInstanceRelayer = ayaraController.connect(deployer);
@@ -334,6 +326,7 @@ describe("AyaraController", function () {
         await walletInstance.getAddress(),
         await erc20Mock.getAddress(),
         ethers.parseEther("1"),
+        CHAIN_ID,
         await erc20Mock.getAddress(),
         0,
         data,

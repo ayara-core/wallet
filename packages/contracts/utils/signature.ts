@@ -1,7 +1,7 @@
 import type { Signer } from "ethers";
 import { ethers } from "hardhat";
 
-import type { AyaraWalletInstance } from "../typechain-types";
+import type { AyaraWalletInstance, AyaraController } from "../typechain-types";
 
 const DOMAIN_TYPE = {
   name: "Ayara",
@@ -37,20 +37,46 @@ interface Message {
 
 export async function generateSignature(
   signer: Signer,
-  chainId: number | bigint,
-  ayaraWalletInstance: AyaraWalletInstance,
+  ayaraWallet: AyaraWalletInstance,
   data: string,
   overrides?: any
 ) {
+  // Check if we got a wallet or a controller
+
   const domain = generateDomainData(
-    chainId,
-    await ayaraWalletInstance.getAddress()
+    await ayaraWallet.chainId(),
+    await ayaraWallet.getAddress()
   );
   const types = TYPES;
   let toSignMessage = {
     ownerAddress: await signer.getAddress(),
-    controllerAddress: await ayaraWalletInstance.controllerAddress(),
-    nonce: await ayaraWalletInstance.nonce(),
+    controllerAddress: await ayaraWallet.controllerAddress(),
+    nonce: await ayaraWallet.nonce(),
+    data: ethers.keccak256(data),
+  };
+
+  if (overrides) {
+    toSignMessage = { ...toSignMessage, ...overrides };
+  }
+
+  return signer.signTypedData(domain, types, toSignMessage);
+}
+
+export async function generateSignatureForUninitializedWallet(
+  signer: Signer,
+  ayaraController: AyaraController,
+  data: string,
+  overrides?: any
+) {
+  const domain = generateDomainData(
+    await ayaraController.chainId(),
+    await ayaraController.calculateWalletAddress(await signer.getAddress())
+  );
+  const types = TYPES;
+  let toSignMessage = {
+    ownerAddress: await signer.getAddress(),
+    controllerAddress: await ayaraController.getAddress(),
+    nonce: 0,
     data: ethers.keccak256(data),
   };
 

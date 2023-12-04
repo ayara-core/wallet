@@ -3,11 +3,19 @@ pragma solidity ^0.8.23;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+import "./lib/MessageStruct.sol";
+
 import "./AyaraWalletInstance.sol";
+import "./AyaraMessenger.sol";
 import "./AyaraGasBank.sol";
 import "./lib/Create2Factory.sol";
 
-contract AyaraController is AyaraGasBank, Create2Factory, Ownable {
+contract AyaraController is
+    AyaraGasBank,
+    AyaraMessenger,
+    Create2Factory,
+    Ownable
+{
     error WalletAlreadyInitialized(address wallet);
     error OperationFailed();
 
@@ -28,13 +36,24 @@ contract AyaraController is AyaraGasBank, Create2Factory, Ownable {
         bytes signature
     );
 
+    event OperationExecutionSent(
+        address indexed owner,
+        address indexed wallet,
+        address indexed to,
+        uint64 destinationChainId,
+        bytes data,
+        bytes signature
+    );
+
     constructor(
         address proxyAdmin_,
-        uint256 salt_,
+        bytes32 salt_,
         uint256 chainId_,
-        address[] memory gasTokens_
-    ) Ownable(proxyAdmin_) {
-        salt = bytes32(salt_);
+        address[] memory gasTokens_,
+        address link_,
+        address router_
+    ) AyaraMessenger(link_, router_) Ownable(proxyAdmin_) {
+        salt = salt_;
         chainId = chainId_;
 
         // Initialize gas tokens
@@ -82,6 +101,7 @@ contract AyaraController is AyaraGasBank, Create2Factory, Ownable {
         address wallet_,
         address feeToken_,
         uint256 feeAmount_,
+        uint64 destinationChainId_,
         address to_,
         uint256 value_,
         bytes calldata data_,
@@ -92,6 +112,42 @@ contract AyaraController is AyaraGasBank, Create2Factory, Ownable {
         if (wallet_ != recordedWallet || wallet_ == address(0))
             _createWallet(owner_);
 
+        // Check if operation is being executed on the same chain
+        if (destinationChainId_ == chainId) {
+            _executeUserOperationThisChain(
+                owner_,
+                wallet_,
+                feeToken_,
+                feeAmount_,
+                to_,
+                value_,
+                data_,
+                signature_
+            );
+        } else {
+            _executeUserOperationOtherChain(
+                owner_,
+                wallet_,
+                feeToken_,
+                feeAmount_,
+                to_,
+                destinationChainId_,
+                data_,
+                signature_
+            );
+        }
+    }
+
+    function _executeUserOperationThisChain(
+        address owner_,
+        address wallet_,
+        address feeToken_,
+        uint256 feeAmount_,
+        address to_,
+        uint256 value_,
+        bytes memory data_,
+        bytes memory signature_
+    ) internal {
         // Perform operation
         (bool success, ) = AyaraWalletInstance(payable(wallet_)).execute(
             to_,
@@ -108,6 +164,43 @@ contract AyaraController is AyaraGasBank, Create2Factory, Ownable {
 
         // Emit event
         emit OperationExecuted(owner_, wallet_, to_, value_, data_, signature_);
+    }
+
+    function _executeUserOperationOtherChain(
+        address owner_,
+        address wallet_,
+        address feeToken_,
+        uint256 feeAmount_,
+        address to_,
+        uint64 destinationChainId_,
+        bytes memory data_,
+        bytes memory signature_
+    ) internal {
+        // Validate if fee is required
+        if (feeAmount_ > 0) _chargeFee(owner_, feeToken_, feeAmount_);
+
+        // Define and set allowance for destination chain
+        // TODO
+
+        // Send exection via AyaraMessenger to the other chain
+        _routeMessage(
+            destinationChainId_,
+            owner_,
+            wallet_,
+            to_,
+            data_,
+            signature_
+        );
+
+        // Emit event
+        emit OperationExecutionSent(
+            owner_,
+            wallet_,
+            to_,
+            destinationChainId_,
+            data_,
+            signature_
+        );
     }
 
     function _createWallet(address owner_) internal returns (address) {
@@ -133,5 +226,53 @@ contract AyaraController is AyaraGasBank, Create2Factory, Ownable {
         emit WalletCreated(owner_, deployedAddress);
 
         return deployedAddress;
+    }
+
+    function calculateWalletAddress(
+        address owner_
+    ) external view returns (address) {
+        // Generate bytecode
+        bytes memory bytecode = type(AyaraWalletInstance).creationCode;
+        bytes memory encodedArgs = abi.encode(owner_, address(this), chainId);
+        bytes memory finalBytecode = abi.encodePacked(bytecode, encodedArgs);
+
+        // Calculate address
+        return computeAddress(salt, keccak256(finalBytecode));
+    }
+
+    function _ccipReceive(
+        Client.Any2EVMMessage memory message
+    ) internal override {
+        // AyaraReceiver._ccipReceive(message);
+
+        // struct Message {
+        //     address owner
+        //     address wallet;
+        //     address to;
+        //     bytes data;
+        //     bytes signature;
+        // }
+
+        // Decode message
+        Message memory decodedMessage = abi.decode(message.data, (Message));
+
+        address recordedWallet = wallets[decodedMessage.owner];
+        if (
+            decodedMessage.wallet != recordedWallet ||
+            decodedMessage.wallet == address(0)
+        ) recordedWallet = _createWallet(decodedMessage.owner);
+
+        // Check if operation is being executed on the same chain
+
+        _executeUserOperationThisChain(
+            decodedMessage.owner,
+            recordedWallet,
+            address(0),
+            0,
+            decodedMessage.to,
+            0,
+            decodedMessage.data,
+            decodedMessage.signature
+        );
     }
 }

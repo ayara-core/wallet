@@ -44,7 +44,7 @@ contract Create2Factory {
     function computeAddress(
         bytes32 salt,
         bytes32 codeHash
-    ) external view returns (address) {
+    ) public view returns (address) {
         return Create2.computeAddress(salt, codeHash);
     }
 }

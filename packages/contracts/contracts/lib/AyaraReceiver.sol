@@ -4,6 +4,8 @@ pragma solidity ^0.8.23;
 import {CCIPReceiver} from "@chainlink/contracts-ccip/src/v0.8/ccip/applications/CCIPReceiver.sol";
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 
+import "hardhat/console.sol";
+
 contract AyaraReceiver is CCIPReceiver {
     bytes32 latestMessageId;
     uint64 latestSourceChainSelector;
@@ -17,11 +19,19 @@ contract AyaraReceiver is CCIPReceiver {
         string latestMessage
     );
 
-    constructor(address router) CCIPReceiver(router) {}
+    constructor(address router_) CCIPReceiver(router_) {}
+
+    function ccipReceive(
+        uint64,
+        Client.Any2EVMMessage memory message
+    ) external {
+        console.log("AyaraReceiver.ccipReceive");
+        _ccipReceive(message);
+    }
 
     function _ccipReceive(
         Client.Any2EVMMessage memory message
-    ) internal override {
+    ) internal virtual override {
         latestMessageId = message.messageId;
         latestSourceChainSelector = message.sourceChainSelector;
         latestSender = abi.decode(message.sender, (address));

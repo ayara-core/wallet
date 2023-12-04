@@ -20,7 +20,7 @@ const systemConfig = getSystemConfig(hre);
 // Helper functions
 
 describe("AyaraController: AyaraWalletInstance", function () {
-  const CHAIN_ID = 31337;
+  const CHAIN_ID = 11155111;
   // This fixture deploys the contract and returns it
   const setup = async () => {
     // Get signers
@@ -296,7 +296,6 @@ describe("AyaraController: AyaraWalletInstance", function () {
 
       const signature = await generateSignature(
         alice,
-        CHAIN_ID,
         ayaraWalletInstanceAlice,
         data
       );
@@ -347,7 +346,6 @@ describe("AyaraController: AyaraWalletInstance", function () {
 
       const signature = await generateSignature(
         relayer,
-        CHAIN_ID,
         ayaraWalletInstanceAlice,
         data
       );
@@ -403,7 +401,6 @@ describe("AyaraController: AyaraWalletInstance", function () {
 
       const signature = await generateSignature(
         alice,
-        CHAIN_ID,
         ayaraWalletInstanceAlice,
         data,
         { nonce: nonce + 1n }
@@ -459,7 +456,6 @@ describe("AyaraController: AyaraWalletInstance", function () {
       // Send a transaction so that the nonce is incremented
       const signature = await generateSignature(
         alice,
-        CHAIN_ID,
         ayaraWalletInstanceAlice,
         data
       );
@@ -482,7 +478,6 @@ describe("AyaraController: AyaraWalletInstance", function () {
 
       const signature2 = await generateSignature(
         alice,
-        CHAIN_ID,
         ayaraWalletInstanceAlice,
         data,
         { nonce: 0n }

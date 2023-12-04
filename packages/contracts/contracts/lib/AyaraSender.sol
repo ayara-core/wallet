@@ -4,7 +4,9 @@ pragma solidity ^0.8.23;
 import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
 
-contract AyaraMessager {
+import "./MessageStruct.sol";
+
+contract AyaraSender {
     enum PayFeesIn {
         NATIVE,
         LINK
@@ -20,15 +22,20 @@ contract AyaraMessager {
         link = link_;
     }
 
-    function sendMessage(
+    function _sendMessage(
         uint64 destinationChainSelector,
-        address receiver,
-        string memory messageText,
-        PayFeesIn payFeesIn
-    ) external {
+        bytes memory data_
+    ) internal {
+        address receiver = address(this);
+        // Should be the AyaraController,
+        // same address because we use Create2
+
+        // We pay fees in LINK, hardcoded for now
+        PayFeesIn payFeesIn = PayFeesIn.LINK;
+
         Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
             receiver: abi.encode(receiver),
-            data: abi.encode(messageText),
+            data: data_,
             tokenAmounts: new Client.EVMTokenAmount[](0),
             extraArgs: "",
             feeToken: payFeesIn == PayFeesIn.LINK ? link : address(0)
