@@ -210,11 +210,6 @@
         "type": "address",
         "name": "latestSender",
         "indexed": false
-      },
-      {
-        "type": "string",
-        "name": "latestMessage",
-        "indexed": false
       }
     ]
   },

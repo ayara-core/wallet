@@ -180,41 +180,26 @@ contract AyaraController is
     }
 
     function _ccipReceive(
-        Client.Any2EVMMessage memory message
+        Client.Any2EVMMessage memory ccipMessage
     ) internal override {
-        // AyaraReceiver._ccipReceive(message);
+        Message memory message = _handleReceive(ccipMessage);
 
-        // struct Message {
-        //     address owner
-        //     address wallet;
-        //     address to;
-        //     bytes data;
-        //     bytes signature;
-        // }
-
-        // Decode message
-        Message memory decodedMessage = abi.decode(message.data, (Message));
-
-        address recordedWallet = wallets[decodedMessage.owner];
-        if (
-            decodedMessage.wallet != recordedWallet ||
-            decodedMessage.wallet == address(0)
-        ) recordedWallet = _createWallet(decodedMessage.owner, chainId, salt);
-
-        // Check if operation is being executed on the same chain
+        address recordedWallet = wallets[message.owner];
+        if (message.wallet != recordedWallet || message.wallet == address(0))
+            recordedWallet = _createWallet(message.owner, chainId, salt);
 
         Transaction memory transaction = Transaction({
             destinationChainId: 0,
-            to: decodedMessage.to,
+            to: message.to,
             value: 0,
-            data: decodedMessage.data,
-            signature: decodedMessage.signature
+            data: message.data,
+            signature: message.signature
         });
 
         FeeData memory feeData = FeeData({token: address(0), amount: 0});
 
         _executeUserOperationThisChain(
-            decodedMessage.owner,
+            message.owner,
             recordedWallet,
             feeData,
             transaction
