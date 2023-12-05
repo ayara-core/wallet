@@ -491,7 +491,7 @@ describe("AyaraController", function () {
         aliceAddress,
         tokenAddress
       );
-      console.log(gasDataOpti);
+      log("Gas Data on Optimism chain before: ", gasDataOpti);
 
       const data = erc20Mock.interface.encodeFunctionData("approve", [
         aliceAddress,
@@ -537,7 +537,7 @@ describe("AyaraController", function () {
         tokenAddress
       );
 
-      console.log(gasDataOptiAfter);
+      log("Gas Data on Optimism chain after: ", gasDataOptiAfter);
 
       expect(gasDataOptiAfter.usedAmount).to.equal(100);
     });
