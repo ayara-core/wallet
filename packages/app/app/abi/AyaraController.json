@@ -543,55 +543,6 @@
   },
   {
     "type": "function",
-    "name": "ccipReceive",
-    "constant": false,
-    "payable": false,
-    "inputs": [
-      {
-        "type": "uint64",
-        "name": ""
-      },
-      {
-        "type": "tuple",
-        "name": "message",
-        "components": [
-          {
-            "type": "bytes32",
-            "name": "messageId"
-          },
-          {
-            "type": "uint64",
-            "name": "sourceChainSelector"
-          },
-          {
-            "type": "bytes",
-            "name": "sender"
-          },
-          {
-            "type": "bytes",
-            "name": "data"
-          },
-          {
-            "type": "tuple[]",
-            "name": "destTokenAmounts",
-            "components": [
-              {
-                "type": "address",
-                "name": "token"
-              },
-              {
-                "type": "uint256",
-                "name": "amount"
-              }
-            ]
-          }
-        ]
-      }
-    ],
-    "outputs": []
-  },
-  {
-    "type": "function",
     "name": "chainId",
     "constant": true,
     "stateMutability": "view",

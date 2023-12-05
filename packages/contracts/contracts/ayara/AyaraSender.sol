@@ -6,6 +6,10 @@ import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.s
 
 import "../lib/Structs.sol";
 
+/**
+ * @title AyaraSender
+ * @dev This contract is responsible for sending messages to CCIP.
+ */
 contract AyaraSender {
     enum PayFeesIn {
         NATIVE,
@@ -17,11 +21,24 @@ contract AyaraSender {
 
     event MessageSent(bytes32 indexed messageId);
 
+    /**
+     * @dev Constructor for the AyaraSender contract.
+     * @param router_ The address of the router.
+     * @param link_ The address of the link.
+     * Initializes the router and link addresses.
+     */
     constructor(address router_, address link_) {
         router = router_;
         link = link_;
     }
 
+    /**
+     * @dev Internal function to send a message.
+     * @param destinationChainSelector The selector of the destination chain.
+     * @param data_ The data to be sent.
+     * Sends a message to the destination chain.
+     * This function is called by the parent contract.
+     */
     function _sendMessage(
         uint64 destinationChainSelector,
         bytes memory data_
@@ -46,7 +63,7 @@ contract AyaraSender {
             message
         );
 
-        bytes32 messageId = 0x0;
+        bytes32 messageId;
 
         if (payFeesIn == PayFeesIn.LINK) {
             // LinkTokenInterface(i_link).approve(i_router, fee);

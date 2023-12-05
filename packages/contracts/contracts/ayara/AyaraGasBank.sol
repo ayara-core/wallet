@@ -6,9 +6,16 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "../lib/Structs.sol";
 
+/**
+ * @title AyaraGasBank
+ * @dev This contract is responsible for managing gas fees for the Ayara protocol.
+ * It allows users to deposit gas tokens, which can then be used to pay for transaction fees.
+ * The contract also provides functions for locking and unlocking gas, as well as charging fees.
+ */
 contract AyaraGasBank is Ownable {
     using SafeERC20 for IERC20;
 
+    // Errors that could be thrown by the contract
     error NotApprovedGasToken(address token);
     error InvalidAmount(uint256 relayerFee, uint256 maxFee);
     error NotEnoughGas(
@@ -18,6 +25,7 @@ contract AyaraGasBank is Ownable {
     );
     error NativeTokenNotSupported();
 
+    // Events that the contract can emit
     event WalletGasLocked(
         address indexed owner,
         address indexed token,
@@ -39,9 +47,11 @@ contract AyaraGasBank is Ownable {
 
     event GasTokensModified(address[] tokens, bool enabled);
 
+    // Mappings to store user gas data and approved gas tokens
     mapping(address => UserGasData) private userGasData;
     mapping(address => bool) public isGasToken;
 
+    // Structs to store user gas data and gas data
     struct UserGasData {
         mapping(address => GasData) gasReserves;
     }
@@ -52,6 +62,11 @@ contract AyaraGasBank is Ownable {
         uint256 usedAmount;
     }
 
+    /**
+     * @dev Constructor for the AyaraGasBank contract.
+     * @param gasTokens_ An array of addresses of the initial gas tokens.
+     * @param initialOwner_ The address of the initial owner of the contract.
+     */
     constructor(
         address[] memory gasTokens_,
         address initialOwner_
@@ -60,6 +75,14 @@ contract AyaraGasBank is Ownable {
         _modifyGasTokens(gasTokens_, true);
     }
 
+    // ----------------- Exterbal View Functions -----------
+
+    /**
+     * @dev Returns the gas data for a specific user and token.
+     * @param owner_ The address of the user.
+     * @param token_ The address of the token.
+     * @return gasData The gas data for the user and token.
+     */
     function getUserGasData(
         address owner_,
         address token_
@@ -67,6 +90,13 @@ contract AyaraGasBank is Ownable {
         gasData = userGasData[owner_].gasReserves[token_];
     }
 
+    // ----------------- External Functions -----------------
+
+    /**
+     * @dev Modifies the list of approved gas tokens.
+     * @param gasTokens_ An array of addresses of the gas tokens to modify.
+     * @param enabled_ A boolean indicating whether the gas tokens should be enabled or disabled.
+     */
     function modifyGasTokens(
         address[] memory gasTokens_,
         bool enabled_
@@ -74,6 +104,38 @@ contract AyaraGasBank is Ownable {
         _modifyGasTokens(gasTokens_, enabled_);
     }
 
+    // ----------------- Internal Functions -----------------
+
+    /**
+     * @dev Returns the available gas for a user and token.
+     * @param owner_ The address of the user.
+     * @param token_ The address of the token.
+     * @return availableGas The available gas for the user and token.
+     * Calculated as totalAmount - lockedAmount - usedAmount.
+     * (totalAmount is the amount of gas deposited by the user or set as allowance)
+     * (lockedAmount is the amount of gas locked by the user, to be used on another chain)
+     * (usedAmount is the amount of gas already used by the user)
+     */
+
+    function _getAvailableGas(
+        address owner_,
+        address token_
+    ) internal view returns (uint256 availableGas) {
+        // Get gas data
+        GasData memory gasData = userGasData[owner_].gasReserves[token_];
+
+        // Calculate available gas
+        availableGas =
+            gasData.totalAmount -
+            gasData.lockedAmount -
+            gasData.usedAmount;
+    }
+
+    /**
+     * @dev Internal function to modify the list of approved gas tokens.
+     * @param gasTokens_ An array of addresses of the gas tokens to modify.
+     * @param enabled_ A boolean indicating whether the gas tokens should be enabled or disabled.
+     */
     function _modifyGasTokens(
         address[] memory gasTokens_,
         bool enabled_
@@ -85,6 +147,14 @@ contract AyaraGasBank is Ownable {
         emit GasTokensModified(gasTokens_, enabled_);
     }
 
+    /**
+     * @dev Internal function to transfer tokens from a user to the contract and fund the user's wallet.
+     * @param owner_ The address of the user.
+     * @param token_ The address of the token.
+     * @param amount_ The amount of tokens to transfer.
+     * This function will revert if the token is not approved, the amount is invalid, or the token is ETH.
+     * This will increase the totalAmount of gas for the user and token.
+     */
     function _transferAndFundWallet(
         address owner_,
         address token_,
@@ -112,6 +182,13 @@ contract AyaraGasBank is Ownable {
         emit WalletGasFunded(owner_, token_, amount_);
     }
 
+    /**
+     * @dev Internal function to charge a fee if required.
+     * @param owner_ The address of the user.
+     * @param feeData_ The fee data.
+     * This function will revert if the fee is invalid or there is not enough gas.
+     * This will increase the usedAmount of gas for the user and token.
+     */
     function _chargeFeeIfRequired(
         address owner_,
         FeeData memory feeData_
@@ -120,6 +197,13 @@ contract AyaraGasBank is Ownable {
         if (feeData_.relayerFee > 0) _chargeFee(owner_, feeData_);
     }
 
+    /**
+     * @dev Internal function to charge a fee.
+     * @param owner_ The address of the user.
+     * @param feeData_ The fee data.
+     * This function will revert if the token is not approved, the fee is invalid, or there is not enough gas.
+     * This will increase the usedAmount of gas for the user and token.
+     */
     function _chargeFee(address owner_, FeeData memory feeData_) internal {
         // Check if token is approved
         if (!isGasToken[feeData_.token])
@@ -158,6 +242,16 @@ contract AyaraGasBank is Ownable {
         );
     }
 
+    /**
+     * @dev Internal function to lock a portion of a user's gas.
+     * @param owner_ The address of the user.
+     * @param token_ The address of the token.
+     * @return toLock The amount of gas to lock.
+     * This function will revert if the token is not approved.
+     * This will increase the lockedAmount of gas for the user and token. And return the amount to lock.
+     * This locked amount will then be send to the other chain as allowance.
+     * The amount to lock is calculated as a third of the available amount.
+     */
     function _lockGas(
         address owner_,
         address token_
@@ -177,6 +271,16 @@ contract AyaraGasBank is Ownable {
         emit WalletGasLocked(owner_, token_, toLock);
     }
 
+    /**
+     * @dev Internal function to set the allowance for a user.
+     * @param owner_ The address of the user.
+     * @param token_ The address of the token.
+     * @param amount_ The amount to set as the allowance.
+     * This function will revert if the token is not approved.
+     * This will set the totalAmount of gas for the user and token.
+     * This will be called when the user locks gas on another chain.
+     * Note: While the totalAmount can be increase by supplying tokens, here we set it based on the locked amount on the other chain.
+     */
     function _setAllowance(
         address owner_,
         address token_,
@@ -190,20 +294,5 @@ contract AyaraGasBank is Ownable {
 
         // Emit event
         emit WalletGasFunded(owner_, token_, amount_);
-    }
-
-    function _getAvailableGas(
-        address owner_,
-        address token_
-    ) internal view returns (uint256) {
-        // Get gas data
-        GasData memory gasData = userGasData[owner_].gasReserves[token_];
-
-        // Calculate available amount
-        uint256 availableAmount = gasData.totalAmount -
-            gasData.lockedAmount -
-            gasData.usedAmount;
-
-        return availableAmount;
     }
 }
