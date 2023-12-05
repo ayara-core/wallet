@@ -1,0 +1,14 @@
+export const PriceFeedAddresses = {
+  fuji: {
+    eth: "0x86d67c3D38D2bCeE722E601025C25a575021c6EA",
+    link: "0x34C4c526902d88a3Aa98DB8a9b802603EB1E3470",
+  },
+  sepolia: {
+    eth: "0x694AA1769357215DE4FAC081bf1f309aDC325306",
+    link: "0xc59E3633BAAC79493d908e63626716e204A45EdF",
+  },
+  mumbai: {
+    eth: "0x0715A7794a1dc8e42615F059dD6e406A6594651A",
+    link: "0x1C2252aeeD50e0c9B64bDfF2735Ee3C932F5C408",
+  },
+}
