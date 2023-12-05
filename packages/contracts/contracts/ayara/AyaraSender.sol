@@ -46,7 +46,7 @@ contract AyaraSender {
             message
         );
 
-        bytes32 messageId;
+        bytes32 messageId = 0x0;
 
         if (payFeesIn == PayFeesIn.LINK) {
             // LinkTokenInterface(i_link).approve(i_router, fee);

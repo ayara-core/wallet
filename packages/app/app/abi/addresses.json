@@ -1,7 +1,7 @@
 {
   "31337": {
     "Create2Factory": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-    "AyaraController": "0x79730f740354323f40a2ffF78aa76Ca408062dbc",
+    "AyaraController": "0xc6b71A912aeCDA0ab56b3B5Df50e4310e6c1D67a",
     "ERC20Mock": "0x965DCfd557Ffe6618230180801FDa16691e15c34",
     "CCIPRouterMock": "0x5aab8b75b654c52536f49e2Cc6059fF32090C650"
   }

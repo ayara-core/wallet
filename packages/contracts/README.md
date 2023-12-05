@@ -22,6 +22,7 @@ Configure the level of logs verbosity with either of the following commands
 ```bash
 export DEBUG=Ayara:log*
 export DEBUG=Ayara:info*
+export DEBUG=Ayara:debug*
 ```
 
 The full details of how npm debug package works can be found [here](https://github.com/debug-js/debug)

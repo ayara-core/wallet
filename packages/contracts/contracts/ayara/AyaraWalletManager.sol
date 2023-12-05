@@ -2,14 +2,53 @@
 pragma solidity ^0.8.23;
 
 import "./AyaraWalletInstance.sol";
+import "./AyaraMessageHandler.sol";
 import "../lib/Create2Factory.sol";
 
-contract AyaraWalletManager is Create2Factory {
+import "../lib/Structs.sol";
+
+contract AyaraWalletManager is AyaraMessageHandler, Create2Factory {
     error WalletAlreadyInitialized(address wallet);
+    error OperationFailed();
 
     mapping(address => address) public wallets;
 
     event WalletCreated(address indexed owner, address indexed wallet);
+
+    event OperationExecuted(
+        address indexed owner,
+        address indexed wallet,
+        address indexed to,
+        uint256 value,
+        bytes data,
+        bytes signature
+    );
+
+    event OperationExecutionSent(
+        address indexed owner,
+        address indexed wallet,
+        address indexed to,
+        uint64 destinationChainId,
+        bytes data,
+        bytes signature
+    );
+
+    constructor(
+        address router_,
+        address link_
+    ) AyaraMessageHandler(router_, link_) {}
+
+    function _createWalletIfNotExists(
+        address owner_,
+        uint256 chainId_,
+        bytes32 salt_
+    ) internal returns (address) {
+        // Check if wallet already exists
+        if (wallets[owner_] != address(0)) return wallets[owner_];
+
+        // Create wallet
+        return _createWallet(owner_, chainId_, salt_);
+    }
 
     function _createWallet(
         address owner_,
@@ -45,6 +84,54 @@ contract AyaraWalletManager is Create2Factory {
         emit WalletCreated(owner_, deployedAddress);
 
         return deployedAddress;
+    }
+
+    function _executeUserOperationThisChain(
+        address owner_,
+        address wallet_,
+        Transaction memory transaction_
+    ) internal returns (bool success) {
+        // Perform operation
+        (success, ) = AyaraWalletInstance(payable(wallet_)).execute(
+            transaction_.to,
+            transaction_.value,
+            transaction_.data,
+            transaction_.signature
+        );
+
+        // Validate if operation was successful
+        if (!success) revert OperationFailed();
+
+        // Emit event
+        emit OperationExecuted(
+            owner_,
+            wallet_,
+            transaction_.to,
+            transaction_.value,
+            transaction_.data,
+            transaction_.signature
+        );
+    }
+
+    function _executeUserOperationOtherChain(
+        address owner_,
+        address wallet_,
+        Transaction memory transaction_,
+        address token_,
+        uint256 lockedAmount_
+    ) internal {
+        // Send exection via AyaraMessenger to the other chain
+        _routeMessage(owner_, wallet_, transaction_, token_, lockedAmount_);
+
+        // Emit event
+        emit OperationExecutionSent(
+            owner_,
+            wallet_,
+            transaction_.to,
+            transaction_.destinationChainId,
+            transaction_.data,
+            transaction_.signature
+        );
     }
 
     function _calculateWalletAddress(

@@ -4,6 +4,8 @@ pragma solidity ^0.8.23;
 import "./AyaraReceiver.sol";
 import "./AyaraSender.sol";
 
+import "../lib/Structs.sol";
+
 contract AyaraMessageHandler is AyaraSender, AyaraReceiver {
     mapping(uint64 => uint64) public chainIdToChainSelector;
 
@@ -23,26 +25,26 @@ contract AyaraMessageHandler is AyaraSender, AyaraReceiver {
     function _routeMessage(
         address owner_,
         address wallet,
-        uint64 destinationChainId,
-        address to_,
-        bytes memory data_,
-        bytes memory signature_
+        Transaction memory transaction_,
+        address token_,
+        uint256 lockedAmount_
     ) internal {
-        // Prepare message
         // Prepare data
         bytes memory data = abi.encode(
             Message({
                 owner: owner_,
                 wallet: wallet,
-                to: to_,
-                data: data_,
-                signature: signature_
+                to: transaction_.to,
+                data: transaction_.data,
+                signature: transaction_.signature,
+                token: token_,
+                lockedAmount: lockedAmount_
             })
         );
 
         // Convert chainId to chainSelector
         uint64 destinationChainSelector = chainIdToChainSelector[
-            destinationChainId
+            transaction_.destinationChainId
         ];
 
         _sendMessage(destinationChainSelector, data);

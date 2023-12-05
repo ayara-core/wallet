@@ -323,7 +323,8 @@ describe("AyaraController", function () {
 
       const feeData = {
         token: await erc20Mock.getAddress(),
-        amount: ethers.parseEther("1"),
+        maxFee: ethers.parseEther("1"),
+        relayerFee: 1,
       };
 
       const transaction = {
@@ -354,7 +355,8 @@ describe("AyaraController", function () {
         .withArgs(
           await alice.getAddress(),
           await erc20Mock.getAddress(),
-          ethers.parseEther("1")
+          ethers.parseEther("1"),
+          1
         );
 
       // Check the GasData
@@ -364,7 +366,7 @@ describe("AyaraController", function () {
       );
       expect(userGasData.totalAmount).to.equal(ethers.parseEther("500"));
       expect(userGasData.lockedAmount).to.equal(0);
-      expect(userGasData.usedAmount).to.equal(ethers.parseEther("1"));
+      expect(userGasData.usedAmount).to.equal(1);
 
       // Check that the transfer was successful
       const balanceBob = await erc20Mock.balanceOf(await bob.getAddress());

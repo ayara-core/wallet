@@ -22,11 +22,11 @@
       },
       {
         "type": "address",
-        "name": "link_"
+        "name": "router_"
       },
       {
         "type": "address",
-        "name": "router_"
+        "name": "link_"
       }
     ]
   },
@@ -85,11 +85,11 @@
     "inputs": [
       {
         "type": "uint256",
-        "name": "amountGiven"
+        "name": "relayerFee"
       },
       {
         "type": "uint256",
-        "name": "amountSupplied"
+        "name": "maxFee"
       }
     ]
   },
@@ -105,11 +105,48 @@
   },
   {
     "type": "error",
+    "name": "InvalidWallet",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "wallet"
+      },
+      {
+        "type": "address",
+        "name": "expectedWallet"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "NativeTokenNotSupported",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "NotApprovedGasToken",
     "inputs": [
       {
         "type": "address",
         "name": "token"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "NotEnoughGas",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "token"
+      },
+      {
+        "type": "uint256",
+        "name": "amountNeeded"
+      },
+      {
+        "type": "uint256",
+        "name": "amountAvailable"
       }
     ]
   },
@@ -350,7 +387,12 @@
       },
       {
         "type": "uint256",
-        "name": "amount",
+        "name": "maxFee",
+        "indexed": false
+      },
+      {
+        "type": "uint256",
+        "name": "relayerFee",
         "indexed": false
       }
     ]
@@ -359,6 +401,28 @@
     "type": "event",
     "anonymous": false,
     "name": "WalletGasFunded",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "token",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "amount",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "WalletGasLocked",
     "inputs": [
       {
         "type": "address",
@@ -659,7 +723,11 @@
           },
           {
             "type": "uint256",
-            "name": "amount"
+            "name": "maxFee"
+          },
+          {
+            "type": "uint256",
+            "name": "relayerFee"
           }
         ]
       },

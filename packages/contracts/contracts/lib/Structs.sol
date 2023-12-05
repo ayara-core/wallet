@@ -7,6 +7,8 @@ struct Message {
     address to;
     bytes data;
     bytes signature;
+    address token;
+    uint256 lockedAmount;
 }
 
 struct Transaction {
@@ -19,5 +21,6 @@ struct Transaction {
 
 struct FeeData {
     address token;
-    uint256 amount;
+    uint256 maxFee;
+    uint256 relayerFee;
 }

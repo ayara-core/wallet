@@ -112,6 +112,7 @@ export async function deploySystem(
   );
 
   const router = await ccipRouterMock.getAddress();
+  info(`CCIPRouterMock: ${router}`);
 
   const ayaraControllerPrimary = await deployAyaraController(
     hre,
@@ -173,12 +174,14 @@ export async function deployAyaraController(
     useCreate2?: boolean;
   }
 ): Promise<AyaraController> {
-  let router = options?.router || "0x000000000000000000000000000000000000dEaD";
+  let router = options?.router;
   let linkToken =
-    options?.linkToken || "0x0000000000000000000000000000000000000001";
+    options?.linkToken || "0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF";
 
   logger("info", "deployAyaraController", ayaraInstance.name);
   logger("info", `chainId: ${ayaraInstance.chainId}`);
+
+  logger("info", `router: ${router}`);
 
   const deploymentOverrides = {
     gasPrice: hre.ethers.parseUnits("1.0", "gwei"),
