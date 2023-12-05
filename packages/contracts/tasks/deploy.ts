@@ -37,49 +37,15 @@ task("fund:account", "Send ETH, ERC20Mocks, and NFTsMocks to an account")
   .setAction(async (args, hre) => {
     info("fund:account");
     const account = args.account;
-    const isLocal =
-      hre.network.name === "hardhat" || hre.network.name === "localhost";
+    // const isLocal =
+    //   hre.network.name === "hardhat" || hre.network.name === "localhost";
+    await hre.run("send:eth", { account: account, amount: 1 });
 
-    let addresses = {
-      erc20MockA: isLocal
-        ? "0x7D0B2154C5c709b3Cc8489286e023Cf75a38E0B5"
-        : await getDeployedAddress(hre, "ERC20MockA"),
-      erc20MockB: isLocal
-        ? "0x416D29fbCf9fc5CA66d792B1f6368221E985ec47"
-        : await getDeployedAddress(hre, "ERC20MockB"),
-      erc721MockA: isLocal
-        ? "0x0106f5483Ace34618dCC1c76EFF7e284e5dE4C6B"
-        : await getDeployedAddress(hre, "ERC721MockA"),
-      erc721MockB: isLocal
-        ? "0x958B411CB2cf43678ca9d366a8a6469CEa85B8fE"
-        : await getDeployedAddress(hre, "ERC721MockB"),
-    };
+    let erc20MockAddress = await getDeployedAddress(hre, "ERC20Mock");
 
-    let tokenId = 0;
-    for (let i = 1; i <= 3; i++) {
-      if (account && account.length === 42) {
-        await hre.run("send:eth", { account: account, amount: 1 });
-        await hre.run("mint:erc20", {
-          account: account,
-          tokenaddress: addresses.erc20MockA,
-          amount: 1000,
-        });
-        await hre.run("mint:erc20", {
-          account: account,
-          tokenaddress: addresses.erc20MockB,
-          amount: 1000,
-        });
-
-        await hre.run("mint:erc721", {
-          account: account,
-          tokenaddress: addresses.erc721MockA,
-          tokenid: tokenId++,
-        });
-        await hre.run("mint:erc721", {
-          account: account,
-          tokenaddress: addresses.erc721MockB,
-          tokenid: tokenId++,
-        });
-      }
-    }
+    await hre.run("mint:erc20", {
+      account: account,
+      tokenaddress: erc20MockAddress,
+      amount: 1000,
+    });
   });
