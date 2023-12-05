@@ -8,6 +8,15 @@ module.exports = {
   },
   plugins: [require("daisyui")],
   daisyui: {
-    themes: ["forest"],
+    themes: [
+      {
+        mytheme: {
+"primary": "#FF825B",
+"secondary": "#B6E2F4",
+"accent": "#FFFFFF",     
+"base-100": "#000000",
+        },
+      },
+    ],
   },
 }

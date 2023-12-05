@@ -1,11 +1,11 @@
 import React from 'react';
-import logo from '../../public/logo-horizontal.png';
+import logo from '../assets/logo-horizontal.png'
 
 const Header: React.FC = () => {
   return (
-    <header>
+    <div className="navbar bg-base-100 mx-3 my-5">
       <img src={logo} alt="Logo" />
-    </header>
+    </div>
   );
 };
 
