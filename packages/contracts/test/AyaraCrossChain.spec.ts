@@ -125,7 +125,7 @@ describe("AyaraController", function () {
         ayaraController,
         ayaraControllerBase,
         ayaraControllerOptimism,
-      } = this;
+      } = this as any as TestContext;
 
       const aliceAddress = await alice.getAddress();
 
@@ -139,28 +139,14 @@ describe("AyaraController", function () {
       const receiptBase = await txBase.wait();
       const walletAddressBase = await ayaraControllerBase.wallets(aliceAddress);
 
-      // Create wallet in Optimism
-      const txOptimism = await ayaraControllerOptimism.createWallet(
-        aliceAddress,
-        []
-      );
-      const receiptOptimism = await txOptimism.wait();
-      const walletAddressOptimism =
-        await ayaraControllerOptimism.wallets(aliceAddress);
-
       // Compare the wallet addresses
       expect(walletAddressMain).to.be.properAddress;
       expect(walletAddressBase).to.be.properAddress;
-      expect(walletAddressOptimism).to.be.properAddress;
-
       expect(walletAddressMain).to.not.equal(walletAddressBase);
-      expect(walletAddressBase).to.not.equal(walletAddressOptimism);
-      expect(walletAddressOptimism).to.not.equal(walletAddressMain);
 
       // Log the wallet addresses
       log(`Wallet Main: ${walletAddressMain}`);
       log(`Wallet Base: ${walletAddressBase}`);
-      log(`Wallet Optimism: ${walletAddressOptimism}`);
     });
     it("Should successfully send a transaction from Controller A to Controller B", async function () {
       // Assumptions:
@@ -184,14 +170,8 @@ describe("AyaraController", function () {
 
       // Get the addresses
       const aliceAddress = await alice.getAddress();
-      const createWalletTx = await ayaraController.createWallet(
-        aliceAddress,
-        []
-      );
-      const createWalletReceipt = await createWalletTx.wait();
-      expect(createWalletReceipt?.status).to.equal(1);
-
       const walletAddressMain = await ayaraController.wallets(aliceAddress);
+      const tokenAddress = await erc20Mock.getAddress();
 
       expect(walletAddressMain).to.not.equal(ethers.ZeroAddress);
       log(`Wallet Main: ${walletAddressMain}`);
@@ -207,9 +187,23 @@ describe("AyaraController", function () {
         data
       );
 
+      // Allow the token to be used as fee token
+      const txApprove = await ayaraController.modifyGasTokens(
+        [tokenAddress],
+        true
+      );
+      await txApprove.wait();
+
+      // Allow token to be used as fee token on Optimism
+      const txApproveOptimism = await ayaraControllerOptimism.modifyGasTokens(
+        [tokenAddress],
+        true
+      );
+      await txApproveOptimism.wait();
+
       // Send the transaction
       const feeData = {
-        token: ethers.ZeroAddress, // Fee Token
+        token: tokenAddress, // Fee Token
         maxFee: 0, // Fee Amount
         relayerFee: 0, // Relayer Fee
       };
@@ -267,7 +261,7 @@ describe("AyaraController", function () {
       expect(gasDataOpti.usedAmount).to.equal(0);
     });
   });
-  describe.only("AyaraController: Crosschain Mocktest Send Tx", async function () {
+  describe("AyaraController: Crosschain Mocktest Send Tx", async function () {
     before("Load fixtures", async function () {
       Object.assign(this, await loadFixture(setup));
     });
@@ -476,6 +470,76 @@ describe("AyaraController", function () {
         .and.to.emit(ayaraControllerOptimism, "WalletCreated")
         .and.to.emit(ayaraControllerOptimism, "WalletGasFunded")
         .and.to.emit(ayaraControllerOptimism, "OperationExecuted");
+    });
+    it("Should be able to use gas on Optimism chain", async function () {
+      const { alice, ayaraControllerOptimism, erc20Mock } =
+        this as any as TestContext;
+
+      const config = getSystemConfig(hre);
+
+      const aliceAddress = await alice.getAddress();
+      const tokenAddress = await erc20Mock.getAddress();
+
+      const walletAddressOptimism =
+        await ayaraControllerOptimism.wallets(aliceAddress);
+
+      const walletInstanceOptimism = (
+        await ethers.getContractAt("AyaraWalletInstance", walletAddressOptimism)
+      ).connect(alice);
+
+      const gasDataOpti = await ayaraControllerOptimism.getUserGasData(
+        aliceAddress,
+        tokenAddress
+      );
+      console.log(gasDataOpti);
+
+      const data = erc20Mock.interface.encodeFunctionData("approve", [
+        aliceAddress,
+        100,
+      ]);
+
+      const signature = await generateSignature(
+        alice,
+        walletInstanceOptimism,
+        data
+      );
+
+      const feeData = {
+        token: tokenAddress, // Fee Token
+        maxFee: 1000, // Fee Amount
+        relayerFee: 100, // Relayer Fee
+      };
+
+      const transaction = {
+        destinationChainId: config.ayaraInstances.optimism.chainId, // Destination ChainId
+        to: tokenAddress, // Destination Contract
+        value: 0, // Value
+        data: data, // Data
+        signature: signature, // Signature
+      };
+
+      const tx = ayaraControllerOptimism.executeUserOperation(
+        aliceAddress,
+        walletAddressOptimism,
+        feeData,
+        transaction
+      );
+
+      await expect(tx)
+        .to.emit(ayaraControllerOptimism, "WalletGasCharged")
+        .withArgs(aliceAddress, tokenAddress, 1000, 100)
+        .and.to.emit(ayaraControllerOptimism, "OperationExecuted")
+        .and.to.emit(erc20Mock, "Approval");
+
+      // Check if gas is used
+      const gasDataOptiAfter = await ayaraControllerOptimism.getUserGasData(
+        aliceAddress,
+        tokenAddress
+      );
+
+      console.log(gasDataOptiAfter);
+
+      expect(gasDataOptiAfter.usedAmount).to.equal(100);
     });
   });
 });

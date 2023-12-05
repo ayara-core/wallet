@@ -7,6 +7,8 @@ import "./AyaraGasBank.sol";
 import "./AyaraWalletManager.sol";
 import "./AyaraWalletInstance.sol";
 
+import "hardhat/console.sol";
+
 contract AyaraController is AyaraGasBank, AyaraWalletManager {
     uint256 public constant VERSION = 1;
     bytes32 public immutable salt;
@@ -88,8 +90,13 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
         Message memory message = _handleReceive(ccipMessage);
 
         address recordedWallet = wallets[message.owner];
-        if (message.wallet != recordedWallet || message.wallet == address(0))
-            recordedWallet = _createWallet(message.owner, chainId, salt);
+        address createdWallet;
+        if (recordedWallet == address(0))
+            createdWallet = _createWalletIfNotExists(
+                message.owner,
+                chainId,
+                salt
+            );
 
         // Set allowance if required
         _setAllowance(message.owner, message.token, message.lockedAmount);
@@ -111,7 +118,7 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
 
         _executeUserOperationThisChain(
             message.owner,
-            recordedWallet,
+            createdWallet,
             transaction
         );
     }

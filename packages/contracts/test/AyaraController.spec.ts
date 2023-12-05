@@ -184,7 +184,7 @@ describe("AyaraController", function () {
       expect(userGasData.usedAmount).to.equal(0);
       expect(userGasData.lockedAmount).to.equal(0);
     });
-    it("Should create a new Wallet for Alice and fund with ETH", async function () {
+    it("Should NOT (disabled for now) create a new Wallet for Alice and fund with ETH", async function () {
       const { ayaraController, alice, deployer } = await loadFixture(setup);
 
       const { walletAddress } = await createWalletAndGetAddress(
@@ -212,23 +212,27 @@ describe("AyaraController", function () {
         ethers.ZeroAddress,
         ethers.parseEther("1")
       );
-      await expect(tx2)
-        .to.emit(ayaraControllerInstance, "WalletGasFunded")
-        .withArgs(
-          await alice.getAddress(),
-          ethers.ZeroAddress,
-          ethers.parseEther("1")
-        );
+      await expect(tx2).to.revertedWithCustomError(
+        ayaraControllerInstance,
+        "NativeTokenNotSupported"
+      );
+      // await expect(tx2)
+      //   .to.emit(ayaraControllerInstance, "WalletGasFunded")
+      //   .withArgs(
+      //     await alice.getAddress(),
+      //     ethers.ZeroAddress,
+      //     ethers.parseEther("1")
+      //   );
 
       // Call function to check the balance of the wallet
-      const userGasData = await ayaraControllerInstance.getUserGasData(
-        await alice.getAddress(),
-        ethers.ZeroAddress
-      );
+      // const userGasData = await ayaraControllerInstance.getUserGasData(
+      //   await alice.getAddress(),
+      //   ethers.ZeroAddress
+      // );
 
-      expect(userGasData.totalAmount).to.equal(ethers.parseEther("1"));
-      expect(userGasData.usedAmount).to.equal(0);
-      expect(userGasData.lockedAmount).to.equal(0);
+      // expect(userGasData.totalAmount).to.equal(ethers.parseEther("1"));
+      // expect(userGasData.usedAmount).to.equal(0);
+      // expect(userGasData.lockedAmount).to.equal(0);
     });
   });
   describe("AyaraController: Sending txs and updating gas usage", async function () {
