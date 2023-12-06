@@ -53,6 +53,12 @@ contract AyaraGasBank is Ownable {
         uint256 amount
     );
 
+    event WalletGasUnlocked(
+        address indexed owner,
+        address indexed token,
+        uint256 amount
+    );
+
     // Mappings to store user gas data and approved gas tokens
     mapping(address => UserGasData) private userGasData;
     mapping(address => bool) public isGasToken;
@@ -157,7 +163,7 @@ contract AyaraGasBank is Ownable {
         userGasData[owner_].gasReserves[token_].lockedAmount -= amount_;
 
         // Emit event
-        emit WalletGasSettled(owner_, token_, amount_);
+        emit WalletGasUnlocked(owner_, token_, amount_);
     }
 
     /**

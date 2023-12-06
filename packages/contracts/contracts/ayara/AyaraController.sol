@@ -98,7 +98,7 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
      * @param owner_ The address of the owner.
      * @param token_ The address of the token to settle.
      * @param destinationChainId_ The ID of the destination chain.
-     * @param ayaraController The address of the AyaraController.
+     * @param ayaraController_ The address of the AyaraController.
      * This function settles the gas, updates the amounts, and returns the amount that can be unlocked on the other chain.
      * It then encodes a message with the owner, wallet, token, and locked amount.
      * A transaction is created with the destination chain ID, AyaraController address, and the encoded message.
@@ -108,33 +108,21 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
         address owner_,
         address token_,
         uint64 destinationChainId_,
-        address ayaraController
+        address ayaraController_
     ) external {
         // Settle gas, updates the amounts and returns the amount that can be unlocked on the other chain
         uint256 amount = _settleGas(owner_, token_);
 
-        bytes memory data = abi.encode(
-            Message({
-                owner: owner_,
-                wallet: wallets[owner_],
-                to: address(0),
-                data: "",
-                signature: "",
-                token: token_,
-                lockedAmount: amount
-            })
-        );
-
         Transaction memory transaction = Transaction({
             destinationChainId: destinationChainId_,
-            to: ayaraController,
+            to: ayaraController_,
             value: 0,
-            data: data,
+            data: "",
             signature: ""
         });
 
         // Send CCIP message to other chain
-        _routeMessage(owner_, wallets[owner_], transaction, token_, 0);
+        _routeMessage(owner_, wallets[owner_], transaction, token_, amount);
     }
 
     /**
@@ -210,6 +198,19 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
         // Handle the received CCIP message, this will emit an event and return a decoded message
         Message memory message = _handleReceive(ccipMessage);
 
+        // If the message is directed to this contract, then we just finalize the settlement
+        if (message.to == address(this)) {
+            _finalizeSettlement(
+                message.owner,
+                message.token,
+                message.lockedAmount
+            );
+            // Return here to avoid executing the user operation
+            return;
+        }
+
+        // Continue with the user operation, the message is not directed to this contract
+        //
         // Get the recorded wallet for the message owner
         address recordedWallet = wallets[message.owner];
         address createdWallet;

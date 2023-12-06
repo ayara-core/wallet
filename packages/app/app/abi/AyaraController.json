@@ -464,6 +464,28 @@
     ]
   },
   {
+    "type": "event",
+    "anonymous": false,
+    "name": "WalletGasUnlocked",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "token",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "amount",
+        "indexed": false
+      }
+    ]
+  },
+  {
     "type": "function",
     "name": "VERSION",
     "constant": true,
@@ -851,7 +873,7 @@
       },
       {
         "type": "address",
-        "name": "ayaraController"
+        "name": "ayaraController_"
       }
     ],
     "outputs": []

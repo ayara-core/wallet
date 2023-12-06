@@ -541,5 +541,74 @@ describe("AyaraController", function () {
 
       expect(gasDataOptiAfter.usedAmount).to.equal(100);
     });
+    it("Should be able to settle gas on Optimism chain and unlock on Main chain", async function () {
+      const { alice, ayaraController, ayaraControllerOptimism, erc20Mock } =
+        this as any as TestContext;
+
+      const config = getSystemConfig(hre);
+
+      const amountAvailableBefore = 333333333333333266n;
+
+      const aliceAddress = await alice.getAddress();
+      const tokenAddress = await erc20Mock.getAddress();
+
+      const walletAddressMain = await ayaraController.wallets(aliceAddress);
+      const walletAddressOptimism =
+        await ayaraControllerOptimism.wallets(aliceAddress);
+
+      // We expect to see that gas is used and some is available on Optimism before
+      const gasDataOptiBefore = await ayaraControllerOptimism.getUserGasData(
+        aliceAddress,
+        tokenAddress
+      );
+      expect(gasDataOptiBefore.usedAmount).to.equal(100);
+      // Should be a third of 1e18
+      expect(gasDataOptiBefore.totalAmount).to.equal(amountAvailableBefore);
+      log("Gas Data on Optimism chain before: ", gasDataOptiBefore);
+
+      // We expect to see that gas is locked on Main before
+      const gasDataMainBefore = await ayaraController.getUserGasData(
+        aliceAddress,
+        tokenAddress
+      );
+      expect(gasDataMainBefore.lockedAmount).to.gt(0);
+      log("Gas Data on Main chain before: ", gasDataMainBefore);
+
+      // Initiate a settle operation
+      const tx = ayaraControllerOptimism.initiateSettlement(
+        aliceAddress,
+        tokenAddress,
+        config.ayaraInstances.sepolia.chainId,
+        await ayaraController.getAddress()
+      );
+
+      await expect(tx)
+        .to.emit(ayaraControllerOptimism, "WalletGasSettled")
+        .withArgs(
+          aliceAddress,
+          tokenAddress,
+          amountAvailableBefore - gasDataOptiBefore.usedAmount
+        )
+        .and.to.emit(ayaraController, "WalletGasUnlocked");
+
+      // Check the finalized amount on Optimism
+      const gasDataOptiAfter = await ayaraControllerOptimism.getUserGasData(
+        aliceAddress,
+        tokenAddress
+      );
+      expect(gasDataOptiAfter.usedAmount).to.equal(0);
+      expect(gasDataOptiAfter.totalAmount).to.equal(0);
+      log("Gas Data on Optimism chain after: ", gasDataOptiAfter);
+
+      // Check the unlocked amount on Main
+      const gasDataMainAfter = await ayaraController.getUserGasData(
+        aliceAddress,
+        tokenAddress
+      );
+      log("Gas Data on Main chain after: ", gasDataMainAfter);
+      expect(gasDataMainAfter.lockedAmount).to.lt(
+        gasDataMainBefore.lockedAmount
+      );
+    });
   });
 });
