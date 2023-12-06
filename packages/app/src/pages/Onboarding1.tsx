@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 
 const Onboarding1: React.FC = () => {
   return (
-    <div>
+    <div className="container">
       <Header />
       <div className="px-5">
         <img src={chainlinkLogo} alt="Chainlink Logo" className="mb-3" />
@@ -17,14 +17,15 @@ const Onboarding1: React.FC = () => {
         </p>
       </div>
       <div className="flex items-end justify-center">
-        <div className="container mx-auto text-center w-full">
+        <div className="mx-auto text-center w-full">
           <button
             onClick={() => alert("Copied!")}
             className="btn btn-accent my-3"
           >
             Copy wallet address
           </button>
-          <Link to={"/onboard/2"}>I already transferred</Link>
+          <p></p>
+          <Link to={"/onboard/2"}>I already transferred -&gt;</Link>
         </div>
       </div>
     </div>

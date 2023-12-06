@@ -11,7 +11,6 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <App />
-    {/* <Onboarding1 /> */}
   </React.StrictMode>
 );
 

@@ -9,6 +9,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Onboarding1 from "./pages/Onboarding1";
 import Onboarding2 from "./pages/Onboarding2";
 import Dashboard from "./pages/Dashboard";
+import Onboarding3 from "./pages/Onboarding3";
+import Onboarding4 from "./pages/Onboarding4";
 
 const clientId =
   "BFroo1J0Yx9-vnNmi1hlf7EiwgBWZx-YdCU0F1yBxzDmKpaQ7t-x34CioYb1oc-3lHM3LeH3mQTu-g0qYSacAHE";
@@ -161,6 +163,8 @@ function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/onboard/1" element={<Onboarding1 />} />
         <Route path="/onboard/2" element={<Onboarding2 />} />
+        <Route path="/onboard/3" element={<Onboarding3 />} />
+        <Route path="/onboard/4" element={<Onboarding4 />} />
       </Routes>
     </Router>
   );
