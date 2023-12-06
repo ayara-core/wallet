@@ -442,6 +442,28 @@
     ]
   },
   {
+    "type": "event",
+    "anonymous": false,
+    "name": "WalletGasSettled",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "token",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "amount",
+        "indexed": false
+      }
+    ]
+  },
+  {
     "type": "function",
     "name": "VERSION",
     "constant": true,
@@ -713,6 +735,27 @@
   },
   {
     "type": "function",
+    "name": "finalizeSettlement",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner_"
+      },
+      {
+        "type": "address",
+        "name": "token_"
+      },
+      {
+        "type": "uint256",
+        "name": "amount_"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
     "name": "getLatestMessageDetails",
     "constant": true,
     "stateMutability": "view",
@@ -787,6 +830,31 @@
         ]
       }
     ]
+  },
+  {
+    "type": "function",
+    "name": "initiateSettlement",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner_"
+      },
+      {
+        "type": "address",
+        "name": "token_"
+      },
+      {
+        "type": "uint64",
+        "name": "destinationChainId_"
+      },
+      {
+        "type": "address",
+        "name": "ayaraController"
+      }
+    ],
+    "outputs": []
   },
   {
     "type": "function",

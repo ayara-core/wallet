@@ -19,6 +19,7 @@ contract AyaraWalletInstance {
     address public immutable controllerAddress;
     uint256 public immutable chainId;
     uint256 public nonce;
+    uint256 public mainWalletChainId;
 
     receive() external payable {}
 

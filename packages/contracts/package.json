@@ -16,13 +16,13 @@
         "task": "yarn hardhat"
     },
     "devDependencies": {
+        "@chainlink/contracts-ccip": "^0.7.6",
         "@nomicfoundation/hardhat-chai-matchers": "^2.0.2",
         "@nomicfoundation/hardhat-ethers": "^3.0.5",
         "@nomicfoundation/hardhat-network-helpers": "^1.0.9",
         "@nomicfoundation/hardhat-toolbox": "^4.0.0",
         "@nomicfoundation/hardhat-verify": "^2.0.1",
         "@openzeppelin/contracts": "^5.0.0",
-        "@chainlink/contracts-ccip": "^0.7.6",
         "@typechain/ethers-v6": "^0.5.1",
         "@typechain/hardhat": "^9.1.0",
         "@types/chai": "^4.3.11",

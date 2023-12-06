@@ -91,6 +91,68 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
         _transferAndFundWallet(owner_, token_, amount_);
     }
 
+    // ----------------- Settlements -------------
+
+    /**
+     * @dev Initiates the settlement process.
+     * @param owner_ The address of the owner.
+     * @param token_ The address of the token to settle.
+     * @param destinationChainId_ The ID of the destination chain.
+     * @param ayaraController The address of the AyaraController.
+     * This function settles the gas, updates the amounts, and returns the amount that can be unlocked on the other chain.
+     * It then encodes a message with the owner, wallet, token, and locked amount.
+     * A transaction is created with the destination chain ID, AyaraController address, and the encoded message.
+     * Finally, it sends a CCIP message to the other chain.
+     */
+    function initiateSettlement(
+        address owner_,
+        address token_,
+        uint64 destinationChainId_,
+        address ayaraController
+    ) external {
+        // Settle gas, updates the amounts and returns the amount that can be unlocked on the other chain
+        uint256 amount = _settleGas(owner_, token_);
+
+        bytes memory data = abi.encode(
+            Message({
+                owner: owner_,
+                wallet: wallets[owner_],
+                to: address(0),
+                data: "",
+                signature: "",
+                token: token_,
+                lockedAmount: amount
+            })
+        );
+
+        Transaction memory transaction = Transaction({
+            destinationChainId: destinationChainId_,
+            to: ayaraController,
+            value: 0,
+            data: data,
+            signature: ""
+        });
+
+        // Send CCIP message to other chain
+        _routeMessage(owner_, wallets[owner_], transaction, token_, 0);
+    }
+
+    /**
+     * @dev Finalizes the settlement process.
+     * @param owner_ The address of the owner.
+     * @param token_ The address of the token to settle.
+     * @param amount_ The amount to be settled.
+     * This function finalizes the gas settlement, updates the amounts and returns the amount that can be unlocked on the other chain.
+     */
+    // TODO: Untested function
+    function finalizeSettlement(
+        address owner_,
+        address token_,
+        uint256 amount_
+    ) external {
+        _finalizeSettlement(owner_, token_, amount_);
+    }
+
     // ----------------- User Operations -----------------
 
     /**

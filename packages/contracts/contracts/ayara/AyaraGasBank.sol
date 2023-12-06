@@ -47,6 +47,12 @@ contract AyaraGasBank is Ownable {
 
     event GasTokensModified(address[] tokens, bool enabled);
 
+    event WalletGasSettled(
+        address indexed owner,
+        address indexed token,
+        uint256 amount
+    );
+
     // Mappings to store user gas data and approved gas tokens
     mapping(address => UserGasData) private userGasData;
     mapping(address => bool) public isGasToken;
@@ -105,6 +111,54 @@ contract AyaraGasBank is Ownable {
     }
 
     // ----------------- Internal Functions -----------------
+
+    /**
+     * @dev Internal function to settle the gas for a user and token.
+     * @param owner_ The address of the user.
+     * @param token_ The address of the token.
+     * This function will revert if the token is not approved or if there is not enough gas.
+     * This will set the totalAmount, lockedAmount, and usedAmount of gas for the user and token to 0.
+     * This will emit a WalletGasSettled event with the owner, token, and available amount.
+     */
+
+    // TODO: Untested function
+    function _settleGas(
+        address owner_,
+        address token_
+    ) internal returns (uint256 availableAmount) {
+        // Check if token is approved
+        if (!isGasToken[token_]) revert NotApprovedGasToken(token_);
+
+        // Calculate available amount
+        availableAmount = _getAvailableGas(owner_, token_);
+
+        // Check if there is enough gas
+        if (availableAmount == 0)
+            revert NotEnoughGas(token_, 1, availableAmount);
+
+        // Set allowance of available amount to 0
+        userGasData[owner_].gasReserves[token_].totalAmount = 0;
+        userGasData[owner_].gasReserves[token_].lockedAmount = 0;
+        userGasData[owner_].gasReserves[token_].usedAmount = 0;
+
+        // Emit event
+        emit WalletGasSettled(owner_, token_, availableAmount);
+    }
+
+    function _finalizeSettlement(
+        address owner_,
+        address token_,
+        uint256 amount_
+    ) internal {
+        // Check if token is approved
+        if (!isGasToken[token_]) revert NotApprovedGasToken(token_);
+
+        // Unlock gas
+        userGasData[owner_].gasReserves[token_].lockedAmount -= amount_;
+
+        // Emit event
+        emit WalletGasSettled(owner_, token_, amount_);
+    }
 
     /**
      * @dev Returns the available gas for a user and token.
