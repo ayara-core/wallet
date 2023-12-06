@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
-// import './App.css';
 import { Web3AuthNoModal } from "@web3auth/no-modal";
 import { CHAIN_NAMESPACES, IProvider, WALLET_ADAPTERS } from "@web3auth/base";
 import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { OpenloginAdapter } from "@web3auth/openlogin-adapter";
 import RPC from "./web3RPC"; // for using web3.js
+
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Onboarding1 from "./pages/Onboarding1";
+import Onboarding2 from "./pages/Onboarding2";
+import Dashboard from "./pages/Dashboard";
 
 const clientId =
   "BFroo1J0Yx9-vnNmi1hlf7EiwgBWZx-YdCU0F1yBxzDmKpaQ7t-x34CioYb1oc-3lHM3LeH3mQTu-g0qYSacAHE";
@@ -12,7 +16,7 @@ const clientId =
 function App() {
   const [web3auth, setWeb3auth] = useState<Web3AuthNoModal | null>(null);
   const [provider, setProvider] = useState<IProvider | null>(null);
-  const [output, setOutput] = useState<string>("");
+  const [, setOutput] = useState<string>("");
 
   useEffect(() => {
     const init = async () => {
@@ -133,34 +137,32 @@ function App() {
     </>
   );
 
+  // return (
+  //   <div data-theme="forest">
+  //     <div className="hero min-h-screen bg-base-200">
+  //       <div className="flex flex-col hero-content text-center">
+  //         <h1 className="text-5xl font-bold py-6">AYARA</h1>
+  //         <div className="max-w-md">
+  //           {web3auth && web3auth.connected ? loggedInView : unloggedInView}
+  //         </div>
+  //         <div className="card w-96 bg-primary text-primary-content">
+  //           <div className="card-body">
+  //           <h2 className="card-title">Result</h2>
+  //             <p className="overflow-y-auto">{output}</p>
+  //           </div>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   </div>
+  // );
   return (
-    <div data-theme="forest">
-      <div className="hero min-h-screen bg-base-200">
-        <div className="flex flex-col hero-content text-center">
-          <h1 className="text-5xl font-bold py-6">AYARA</h1>
-          <div className="max-w-md">
-            {web3auth && web3auth.connected ? loggedInView : unloggedInView}
-          </div>
-          <div className="card w-96 bg-primary text-primary-content">
-            <div className="card-body">
-            <h2 className="card-title">Result</h2>
-              <p className="overflow-y-auto">{output}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      {/* <h1 className="text-xl">Ayara Wallet</h1>
-
-      <footer className="footer">
-        <a
-          href="https://github.com/ayara-core"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Ayara Github
-        </a>
-      </footer> */}
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/onboard/1" element={<Onboarding1 />} />
+        <Route path="/onboard/2" element={<Onboarding2 />} />
+      </Routes>
+    </Router>
   );
 }
 
