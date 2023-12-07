@@ -105,7 +105,7 @@ function Dashboard() {
   }
 
   const loggedInView = (
-    <div className="artboard w-extension h-extension flex flex-col items-center justify-start bg-gray-800 pt-4">
+    <div className="artboard w-extension h-extension flex flex-col items-center justify-start pt-4">
     {/* Dropdown */}
     <select className="select select-bordered select-xs rounded-full">
       <option selected>Optimism</option>
@@ -119,7 +119,7 @@ function Dashboard() {
       }
     >
       <div className="badge badge-lg badge-secondary font-lg">
-        0xABCDEF....2345
+        0x6fCA2C4....062f
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"

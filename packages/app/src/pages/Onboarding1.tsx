@@ -16,8 +16,8 @@ const Onboarding1: React.FC = () => {
           chains
         </p>
       </div>
-      <div className="flex items-end justify-center">
-        <div className="mx-auto text-center w-full">
+      <div className="flex items-end justify-center h-screen">
+        <div className="mx-auto text-center">
           <button
             onClick={() => alert("Copied!")}
             className="btn btn-accent my-3"
