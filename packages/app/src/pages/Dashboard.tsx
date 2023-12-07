@@ -7,6 +7,7 @@ import { OpenloginAdapter } from "@web3auth/openlogin-adapter";
 import RPC from "../web3RPC"; // for using web3.js
 import Header from "../components/Header";
 import chainlinkLogo from "../assets/chainlink-logo-white.png";
+import { useNavigate } from 'react-router-dom';
 import { Link } from "react-router-dom";
 
 const clientId =
@@ -16,6 +17,7 @@ function Dashboard() {
   const [web3auth, setWeb3auth] = useState<Web3AuthNoModal | null>(null);
   const [provider, setProvider] = useState<IProvider | null>(null);
   const [, setOutput] = useState<string>("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const init = async () => {
@@ -69,6 +71,7 @@ function Dashboard() {
       }
     );
     setProvider(web3authProvider);
+    navigate('/onboard/1');
   };
 
   const logout = async () => {
@@ -219,6 +222,11 @@ function Dashboard() {
         </div>
       </div>
     </div>
+    
+    <button onClick={logout} className="">
+        Log Out
+    </button>
+
   </div>
   );
 
