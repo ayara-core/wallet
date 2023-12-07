@@ -7,7 +7,7 @@ const Onboarding4: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div>
+    <div className="container">
       <Header />
       <div className="px-5">
         <p className="text-secondary text-xl">Time to fill up gas</p>
@@ -15,12 +15,14 @@ const Onboarding4: React.FC = () => {
         We will lock your LINK, so you can free to use any dapp on L2 
         </p>
       </div>
-      <button
-            onClick={() => navigate('/')}
-            className="btn btn-accent px-5 my-3"
-          >
-            Transact
+      <div className='flex justify-center mt-12'>
+        <button
+              onClick={() => navigate('/')}
+              className="btn btn-accent px-5 my-3"
+            >
+              Transact
         </button>
+      </div>
     </div>
   );
 };

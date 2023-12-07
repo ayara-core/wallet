@@ -1,10 +1,10 @@
 import React from "react";
 import Header from "../components/Header";
 import chainlinkLogo from "../assets/chainlink-logo-white.png";
-
 import { Link } from "react-router-dom";
 
 const Onboarding1: React.FC = () => {
+
   return (
     <div className="container">
       <Header />
@@ -16,10 +16,10 @@ const Onboarding1: React.FC = () => {
           chains
         </p>
       </div>
-      <div className="flex items-end justify-center h-screen">
-        <div className="mx-auto text-center">
+      <div className="flex justify-center mt-12">
+        <div className="">
           <button
-            onClick={() => alert("Copied!")}
+            onClick={() => alert("copied!")}
             className="btn btn-accent my-3"
           >
             Copy wallet address

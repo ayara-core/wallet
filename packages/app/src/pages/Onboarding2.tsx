@@ -13,12 +13,15 @@ const Onboarding2: React.FC = () => {
             Empowered by CCIP, making universal gas wallet comes true.
           </p>
       </div>
-      <button
-        onClick={() => navigate('/onboard/3')}
-        className="btn btn-accent px-5 my-3"
-      >
-        Start Staking
-      </button>
+      <div className='flex justify-center mt-12'>
+        <button
+          onClick={() => navigate('/onboard/3')}
+          className="btn btn-accent"
+        >
+          Start Staking
+        </button>
+      </div>
+     
     </div>
   );
 };
