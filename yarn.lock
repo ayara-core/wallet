@@ -1329,10 +1329,10 @@
   resolved "https://registry.npmjs.org/@csstools/selector-specificity/-/selector-specificity-2.2.0.tgz"
   integrity sha512-+OJ9konv95ClSTOJCmMZqpd5+YGsB2S+x6w3E1oaM8UuR5j8nTNHYSz8c9BEPGDOCMQYIEEGlVPj/VY64iTbGw==
 
-"@esbuild/darwin-arm64@0.16.17":
+"@esbuild/darwin-x64@0.16.17":
   version "0.16.17"
-  resolved "https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.16.17.tgz"
-  integrity sha512-/2agbUEfmxWHi9ARTX6OQ/KgXnOWfsNlTeLcoV7HSuSTv63E4DqtAc+2XqGw1KHxKMHGZgbVCZge7HXWX9Vn+w==
+  resolved "https://registry.npmjs.org/@esbuild/darwin-x64/-/darwin-x64-0.16.17.tgz"
+  integrity sha512-2By45OBHulkd9Svy5IOCZt376Aa2oOkiE9QWUK9fe6Tb+WDr8hXL3dpqi+DeLiMed8tVXspzsTAvd0jUl96wmg==
 
 "@eslint-community/eslint-utils@^4.2.0":
   version "4.4.0"
@@ -2380,10 +2380,10 @@
     table "^6.8.0"
     undici "^5.14.0"
 
-"@nomicfoundation/solidity-analyzer-darwin-arm64@0.1.1":
+"@nomicfoundation/solidity-analyzer-darwin-x64@0.1.1":
   version "0.1.1"
-  resolved "https://registry.npmjs.org/@nomicfoundation/solidity-analyzer-darwin-arm64/-/solidity-analyzer-darwin-arm64-0.1.1.tgz"
-  integrity sha512-KcTodaQw8ivDZyF+D76FokN/HdpgGpfjc/gFCImdLUyqB6eSWVaZPazMbeAjmfhx3R0zm/NYVzxwAokFKgrc0w==
+  resolved "https://registry.npmjs.org/@nomicfoundation/solidity-analyzer-darwin-x64/-/solidity-analyzer-darwin-x64-0.1.1.tgz"
+  integrity sha512-XhQG4BaJE6cIbjAVtzGOGbK3sn1BO9W29uhk9J8y8fZF1DYz0Doj8QDMfpMu+A6TjPDs61lbsmeYodIDnfveSA==
 
 "@nomicfoundation/solidity-analyzer@^0.1.0":
   version "0.1.1"
@@ -2406,10 +2406,10 @@
   resolved "https://registry.npmjs.org/@openzeppelin/contracts/-/contracts-5.0.0.tgz"
   integrity sha512-bv2sdS6LKqVVMLI5+zqnNrNU/CA+6z6CmwFXm/MzmOPBRSO5reEJN7z0Gbzvs0/bv/MZZXNklubpwy3v2+azsw==
 
-"@parcel/watcher-darwin-arm64@2.3.0":
+"@parcel/watcher-darwin-x64@2.3.0":
   version "2.3.0"
-  resolved "https://registry.npmjs.org/@parcel/watcher-darwin-arm64/-/watcher-darwin-arm64-2.3.0.tgz"
-  integrity sha512-mKY+oijI4ahBMc/GygVGvEdOq0L4DxhYgwQqYAz/7yPzuGi79oXrZG52WdpGA1wLBPrYb0T8uBaGFo7I6rvSKw==
+  resolved "https://registry.npmjs.org/@parcel/watcher-darwin-x64/-/watcher-darwin-x64-2.3.0.tgz"
+  integrity sha512-20oBj8LcEOnLE3mgpy6zuOq8AplPu9NcSSSfyVKgfOhNAc4eF4ob3ldj0xWjGGbOF7Dcy1Tvm6ytvgdjlfUeow==
 
 "@parcel/watcher-wasm@2.3.0":
   version "2.3.0"
@@ -4620,7 +4620,7 @@ axobject-query@^3.2.1:
   dependencies:
     dequal "^2.0.3"
 
-"ayara-app@file:/Users/son/code/ayara-core/wallet/packages/app":
+"ayara-app@file:/Users/nonkung51/Workspace/constellation-hackathon/wallet/packages/app":
   version "0.1.0"
   resolved "file:packages/app"
   dependencies:
@@ -4637,12 +4637,13 @@ axobject-query@^3.2.1:
     "@web3auth/openlogin-adapter" "^7.1.2"
     react "^18.2.0"
     react-dom "^18.2.0"
+    react-router-dom "^6.20.1"
     react-scripts "5.0.1"
     typescript "^4.9.5"
     web-vitals "^2.1.4"
     web3 "^4.2.2"
 
-"ayara-contracts@file:/Users/son/code/ayara-core/wallet/packages/contracts":
+"ayara-contracts@file:/Users/nonkung51/Workspace/constellation-hackathon/wallet/packages/contracts":
   version "0.0.1"
   resolved "file:packages/contracts"
   dependencies:

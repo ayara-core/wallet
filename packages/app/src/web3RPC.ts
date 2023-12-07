@@ -79,6 +79,27 @@ export default class EthereumRpc {
     }
   }
 
+  async sendTransactionWithABI(abi: any[], contractAddress: string, method: string, params: any, value: string): Promise<any> {
+    try {
+      const web3 = new Web3(this.provider as any);
+
+      // Get user's Ethereum public address
+      const fromAddress = (await web3.eth.getAccounts())[0];
+
+      // Create contract instance
+      const contract = new web3.eth.Contract(abi, contractAddress);
+      // @ts-ignore
+      const receipt = await contract.methods[method](...params).send({
+        from: fromAddress,
+        value: web3.utils.toWei(value, "ether")
+      });
+
+      return receipt;
+    } catch (error) {
+      return error as string;
+    }
+  }
+
   async signMessage() {
     try {
       const web3 = new Web3(this.provider as any);
