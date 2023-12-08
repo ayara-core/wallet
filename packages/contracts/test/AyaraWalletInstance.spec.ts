@@ -28,8 +28,11 @@ describe("AyaraController: AyaraWalletInstance", function () {
 
     const {
       ayaraControllerPrimary: ayaraController,
-      mocks: { erc20Mock },
-    } = await deploySystem(hre, deployer, systemConfig);
+      mocks: { erc20Mock } = {},
+    } = await deploySystem(hre, deployer, true);
+    if (!erc20Mock) {
+      throw new Error("ERC20Mock not deployed");
+    }
     return { alice, bob, deployer, relayer, ayaraController, erc20Mock };
   };
   describe("AyaraWalletInstace: Wallet creation and addresses tests", async function () {

@@ -154,6 +154,17 @@ export const deployContractWithCreate2 = async <
   log(`ABI encoded args: ${abiEncodedConstructorArgs.slice(2)}`);
 
   await saveAddress(hre, contract, contractName);
+
+  if (hre.network.name !== "hardhat" && hre.network.name !== "localhost") {
+    // Add a delay, otherwise the contract is not yet available on Etherscan
+    log("Waiting 20 seconds for Etherscan to index the contract");
+    await new Promise((resolve) => setTimeout(resolve, 20000));
+    log("Done waiting");
+    await hre.run("verify:verify", {
+      address: await contract.getAddress(),
+      constructorArguments: [...constructorArgs],
+    });
+  }
   return contract;
 };
 

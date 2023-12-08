@@ -3,6 +3,7 @@ pragma solidity ^0.8.23;
 
 import {IRouterClient} from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
 import {Client} from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "../lib/Structs.sol";
 
@@ -41,27 +42,23 @@ contract AyaraSender {
      */
     function _sendMessage(
         uint64 destinationChainSelector,
+        address destinationAddress,
         bytes memory data_
-    ) internal {
-        address receiver = address(this);
-        // Should be the AyaraController,
-        // same address because we use Create2
-
+    ) internal returns (uint256 fee) {
         // We pay fees in LINK, hardcoded for now
         PayFeesIn payFeesIn = PayFeesIn.LINK;
 
         Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
-            receiver: abi.encode(receiver),
+            receiver: abi.encode(destinationAddress),
             data: data_,
             tokenAmounts: new Client.EVMTokenAmount[](0),
             extraArgs: "",
             feeToken: payFeesIn == PayFeesIn.LINK ? link : address(0)
         });
 
-        uint256 fee = IRouterClient(router).getFee(
-            destinationChainSelector,
-            message
-        );
+        fee = IRouterClient(router).getFee(destinationChainSelector, message);
+        // Approve the router to spend the fee
+        IERC20(link).approve(router, fee);
 
         bytes32 messageId;
 
@@ -79,5 +76,12 @@ contract AyaraSender {
         }
 
         emit MessageSent(messageId);
+    }
+
+    function getRouterFee(
+        uint64 destinationChainSelector,
+        Client.EVM2AnyMessage memory message
+    ) public view returns (uint256) {
+        return IRouterClient(router).getFee(destinationChainSelector, message);
     }
 }

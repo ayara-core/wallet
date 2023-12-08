@@ -42,6 +42,10 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
         AyaraGasBank(gasTokens_, initialOwner_)
     {
         salt = salt_;
+
+        // Get the chain ID
+        // if (useBlockChainId) chainId = block.chainid;
+        // else chainId = chainId_;
         chainId = chainId_;
     }
 
@@ -89,6 +93,15 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
 
         // Add funds to wallet
         _transferAndFundWallet(owner_, token_, amount_);
+    }
+
+    // ----------------- Redirects to Messagehandler -----------------
+
+    function setChainIdToAyaraController(
+        uint64 chainId_,
+        address ayaraController_
+    ) external onlyOwner {
+        _setChainIdToAyaraController(chainId_, ayaraController_);
     }
 
     // ----------------- Settlements -------------
@@ -163,9 +176,6 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
         address wallet = _createWalletIfNotExists(owner_, chainId, salt);
         if (wallet != wallet_) revert InvalidWallet(wallet, wallet_);
 
-        // Charge fee if required
-        _chargeFeeIfRequired(owner_, feeData_);
-
         // Execute user operation
         if (transaction_.destinationChainId == chainId) {
             // execute on this chain
@@ -174,14 +184,18 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
             // lock gas first on source chain, then execute on another chain
             uint256 lockedAmount = _lockGas(owner_, feeData_.token);
             // execute on another chain, passing the locked amount as allowance
-            _executeUserOperationOtherChain(
+            uint256 crossChainFee = _executeUserOperationOtherChain(
                 owner_,
                 wallet_,
                 transaction_,
                 feeData_.token,
                 lockedAmount
             );
+
+            feeData_.relayerFee = feeData_.relayerFee + crossChainFee;
         }
+        // Charge fee if required
+        _chargeFeeIfRequired(owner_, feeData_);
     }
 
     // ----------------- CCIP -----------------

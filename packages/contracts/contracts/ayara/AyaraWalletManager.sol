@@ -175,9 +175,15 @@ contract AyaraWalletManager is AyaraMessageHandler, Create2Factory {
         Transaction memory transaction_,
         address token_,
         uint256 lockedAmount_
-    ) internal {
+    ) internal returns (uint256 fee) {
         // Send exection via AyaraMessenger to the other chain
-        _routeMessage(owner_, wallet_, transaction_, token_, lockedAmount_);
+        fee = _routeMessage(
+            owner_,
+            wallet_,
+            transaction_,
+            token_,
+            lockedAmount_
+        );
 
         // Emit event
         emit OperationExecutionSent(

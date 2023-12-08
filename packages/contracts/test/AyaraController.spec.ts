@@ -25,8 +25,11 @@ describe("AyaraController", function () {
 
     const {
       ayaraControllerPrimary: ayaraController,
-      mocks: { erc20Mock },
-    } = await deploySystem(hre, deployer, systemConfig);
+      mocks: { erc20Mock } = {},
+    } = await deploySystem(hre, deployer);
+    if (!erc20Mock) {
+      throw new Error("ERC20Mock not deployed");
+    }
     return { alice, bob, deployer, relayer, ayaraController, erc20Mock };
   };
   describe("AyaraController: Deployment tests", async function () {

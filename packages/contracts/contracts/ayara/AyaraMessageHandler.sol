@@ -13,6 +13,7 @@ import "../lib/Structs.sol";
  */
 contract AyaraMessageHandler is AyaraSender, AyaraReceiver {
     mapping(uint64 => uint64) public chainIdToChainSelector;
+    mapping(uint64 => address) public chainIdToAyaraController;
 
     /**
      * @dev Constructor for the AyaraMessageHandler contract.
@@ -35,6 +36,13 @@ contract AyaraMessageHandler is AyaraSender, AyaraReceiver {
         chainIdToChainSelector[84531] = 5790810961207155433;
     }
 
+    function _setChainIdToAyaraController(
+        uint64 chainId_,
+        address ayaraController_
+    ) internal {
+        chainIdToAyaraController[chainId_] = ayaraController_;
+    }
+
     /**
      * @dev Routes a message to the appropriate chain.
      * @param owner_ The address of the owner.
@@ -49,7 +57,7 @@ contract AyaraMessageHandler is AyaraSender, AyaraReceiver {
         Transaction memory transaction_,
         address token_,
         uint256 lockedAmount_
-    ) internal {
+    ) internal returns (uint256) {
         // Prepare data
         bytes memory data = abi.encode(
             Message({
@@ -68,7 +76,16 @@ contract AyaraMessageHandler is AyaraSender, AyaraReceiver {
             transaction_.destinationChainId
         ];
 
+        address destinationChainAyaraController = chainIdToAyaraController[
+            transaction_.destinationChainId
+        ];
+
         // Send message to destination chain, handled by AyaraReceiver
-        _sendMessage(destinationChainSelector, data);
+        return
+            _sendMessage(
+                destinationChainSelector,
+                destinationChainAyaraController,
+                data
+            );
     }
 }

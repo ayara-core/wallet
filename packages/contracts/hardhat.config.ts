@@ -27,6 +27,28 @@ const config: HardhatUserConfig = {
         mnemonic: process.env.MNEMONIC,
       },
     },
+    optimismGoerli: {
+      url: process.env.NODE_URL_OPTIMISM || "",
+      chainId: 420,
+      accounts,
+    },
+    sepolia: {
+      url: process.env.NODE_URL_SEPOLIA || "",
+      chainId: 11155111,
+      accounts,
+    },
+    baseGoerli: {
+      url: process.env.NODE_URL_BASE || "",
+      chainId: 84531,
+      accounts,
+    },
+  },
+  etherscan: {
+    apiKey: {
+      optimisticGoerli: process.env.ETHERSCAN_OPTIMISM_API_KEY || "",
+      sepolia: process.env.ETHERSCAN_SEPOLIA_API_KEY || "",
+      baseGoerli: process.env.ETHERSCAN_BASE_API_KEY || "",
+    },
   },
 };
 

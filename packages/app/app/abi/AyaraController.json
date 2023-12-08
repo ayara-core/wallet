@@ -601,6 +601,25 @@
   },
   {
     "type": "function",
+    "name": "chainIdToAyaraController",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint64",
+        "name": ""
+      }
+    ],
+    "outputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
     "name": "chainIdToChainSelector",
     "constant": true,
     "stateMutability": "view",
@@ -818,6 +837,61 @@
   },
   {
     "type": "function",
+    "name": "getRouterFee",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint64",
+        "name": "destinationChainSelector"
+      },
+      {
+        "type": "tuple",
+        "name": "message",
+        "components": [
+          {
+            "type": "bytes",
+            "name": "receiver"
+          },
+          {
+            "type": "bytes",
+            "name": "data"
+          },
+          {
+            "type": "tuple[]",
+            "name": "tokenAmounts",
+            "components": [
+              {
+                "type": "address",
+                "name": "token"
+              },
+              {
+                "type": "uint256",
+                "name": "amount"
+              }
+            ]
+          },
+          {
+            "type": "address",
+            "name": "feeToken"
+          },
+          {
+            "type": "bytes",
+            "name": "extraArgs"
+          }
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "type": "uint256",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
     "name": "getUserGasData",
     "constant": true,
     "stateMutability": "view",
@@ -977,6 +1051,23 @@
         "name": ""
       }
     ]
+  },
+  {
+    "type": "function",
+    "name": "setChainIdToAyaraController",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint64",
+        "name": "chainId_"
+      },
+      {
+        "type": "address",
+        "name": "ayaraController_"
+      }
+    ],
+    "outputs": []
   },
   {
     "type": "function",

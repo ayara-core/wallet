@@ -67,7 +67,7 @@ contract CCIPRouterMock is IRouterClient {
         uint64 destinationChainSelector,
         Client.EVM2AnyMessage memory message
     ) external view virtual returns (uint256) {
-        return 0.1 * 10 ** 18; // Returns 0.1 Link
+        return 0; // Returns 0 Link
     }
 
     /// @notice Request a message to be sent to the destination chain

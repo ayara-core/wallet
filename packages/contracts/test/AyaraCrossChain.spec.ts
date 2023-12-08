@@ -47,7 +47,7 @@ describe("AyaraController", function () {
     // Get signers
     const { alice, bob, deployer, relayer } = await getCommonSigners(hre);
 
-    const systemDeployed = await deploySystem(hre, deployer, systemConfig);
+    const systemDeployed = await deploySystem(hre, deployer);
     const ayaraController =
       systemDeployed.ayaraControllerPrimary.connect(deployer);
     const ayaraControllerBase = systemDeployed.ayaraControllerBase
@@ -56,13 +56,13 @@ describe("AyaraController", function () {
     const ayaraControllerOptimism = systemDeployed.ayaraControllerOptimism
       ? systemDeployed.ayaraControllerOptimism.connect(deployer)
       : undefined;
-    const erc20Mock = systemDeployed.mocks.erc20Mock;
+    const erc20Mock = systemDeployed?.mocks?.erc20Mock;
     const ccipRouterMock = systemDeployed.ccipRouterMock;
 
     // Mint some tokens for Alice
     const aliceAddress = await alice.getAddress();
-    const tx = await erc20Mock.mint(aliceAddress, ethers.parseEther("1000"));
-    await tx.wait();
+    const tx = await erc20Mock?.mint(aliceAddress, ethers.parseEther("1000"));
+    await tx?.wait();
 
     return {
       alice,
@@ -204,7 +204,7 @@ describe("AyaraController", function () {
       // Send the transaction
       const feeData = {
         token: tokenAddress, // Fee Token
-        maxFee: 0, // Fee Amount
+        maxFee: ethers.parseEther("1"), // Fee Amount
         relayerFee: 0, // Relayer Fee
       };
 
@@ -547,7 +547,7 @@ describe("AyaraController", function () {
 
       const config = getSystemConfig(hre);
 
-      const amountAvailableBefore = 333333333333333266n;
+      const amountAvailableBefore = 333333333333333300n;
 
       const aliceAddress = await alice.getAddress();
       const tokenAddress = await erc20Mock.getAddress();

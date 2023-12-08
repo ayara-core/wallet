@@ -11,14 +11,21 @@ import {
   CCIPRouterMock__factory,
 } from "../typechain-types";
 
-import { getSystemConfig, SystemConfig } from "../utils/deployConfig";
+import { getDeployedAddress } from "../utils/saveAddress";
+import { deployAyaraController } from "./deployAyaraController";
+
+import {
+  getSystemConfig,
+  SystemConfig,
+  getDeployConfig,
+} from "../utils/deployConfig";
 import {
   deployContract,
   deployContractWithCreate2,
   logger,
 } from "../utils/deployUtils";
 
-const info = logger("info", "deploy");
+const log = logger("log", "deploy");
 
 export interface MocksDeployed {
   erc20Mock: ERC20Mock;
@@ -29,23 +36,117 @@ export interface SystemDeployed {
   ayaraControllerPrimary: AyaraController;
   ayaraControllerOptimism?: AyaraController;
   ayaraControllerBase?: AyaraController;
-  mocks: MocksDeployed;
-  ccipRouterMock: CCIPRouterMock;
+  mocks?: MocksDeployed;
+  ccipRouterMock?: CCIPRouterMock;
+}
+
+export async function deploySystem(
+  hre: HardhatRuntimeEnvironment,
+  signer: Signer,
+  options?: { unitTest?: boolean; slowMode?: boolean }
+): Promise<SystemDeployed> {
+  log("Deploying System");
+  const { ayaraConfig, ayaraInstances } = getSystemConfig(hre);
+  let deploymentOverrides = {
+    gasPrice: hre.ethers.parseUnits("1.0", "gwei"),
+  };
+
+  // Set to true by default
+  const unitTest = options?.unitTest !== undefined ? options.unitTest : true;
+  // Set to false by default
+  const slowMode = options?.slowMode !== undefined ? options.slowMode : false;
+  log(`unitTest: ${unitTest}`);
+  log(`slowMode: ${slowMode}`);
+
+  const create2Factory = await deployContract<Create2Factory>(
+    hre,
+    signer,
+    "Create2Factory",
+    [],
+    deploymentOverrides
+  );
+
+  const mocks = await deployMocks(hre, signer, create2Factory, true);
+
+  let ayaraControllerPrimary,
+    ayaraControllerOptimism,
+    ayaraControllerBase,
+    ccipRouterMock;
+
+  if (unitTest) {
+    ({
+      ayaraControllerPrimary,
+      ayaraControllerOptimism,
+      ayaraControllerBase,
+      ccipRouterMock,
+    } = await deploySystemForLocal(
+      hre,
+      signer,
+      create2Factory,
+      ayaraInstances,
+      mocks.erc20Mock
+    ));
+  } else {
+    ayaraControllerPrimary = await deployAyaraController(
+      hre,
+      signer,
+      create2Factory,
+      {
+        chainId: hre.network.config.chainId ?? 31337,
+        name: "AyaraController",
+      },
+      {
+        useCreate2: false,
+        slowMode: slowMode,
+      }
+    );
+  }
+
+  return {
+    create2Factory,
+    ayaraControllerPrimary: ayaraControllerPrimary,
+    ayaraControllerOptimism: ayaraControllerOptimism,
+    ayaraControllerBase: ayaraControllerBase,
+    mocks,
+    ccipRouterMock,
+  };
 }
 
 export async function deployMocks(
   hre: HardhatRuntimeEnvironment,
   signer: Signer,
-  create2Factory: Create2Factory
+  create2Factory: Create2Factory,
+  forceCreate2?: boolean
 ): Promise<MocksDeployed> {
-  info("Deploying Mocks");
+  log("Deploying Mocks");
   const deploymentOverrides = {
-    gasPrice: hre.ethers.parseUnits("1.0", "gwei"),
+    gasPrice: hre.ethers.parseUnits("4.0", "gwei"),
   };
 
   let erc20Mock: ERC20Mock;
 
-  if (hre.network.name === "hardhat" || hre.network.name === "localhost") {
+  // Check if ERC20Mock is already deployed, but only for non-local networks
+  const deployedAddress = await getDeployedAddress(hre, "ERC20Mock");
+  if (
+    deployedAddress &&
+    hre.network.name !== "hardhat" &&
+    hre.network.name !== "localhost"
+  ) {
+    log(`ERC20Mock already deployed to ${deployedAddress}`);
+    const contract = new ERC20Mock__factory(signer).attach(
+      deployedAddress
+    ) as ERC20Mock;
+    return {
+      erc20Mock: contract,
+    };
+  }
+
+  // Force deploy with create2, overwrite if create2 does not work
+  if (
+    forceCreate2 ||
+    hre.network.name === "hardhat" ||
+    hre.network.name === "localhost"
+  ) {
     // Deploy mocks with create2
     const deployCreate2Options = {
       overrides: deploymentOverrides,
@@ -75,30 +176,21 @@ export async function deployMocks(
       deploymentOverrides
     );
   }
+  log(`ERC20Mock: ${await erc20Mock.getAddress()}`);
 
   return {
     erc20Mock,
   };
 }
 
-export async function deploySystem(
+export async function deploySystemForLocal(
   hre: HardhatRuntimeEnvironment,
   signer: Signer,
-  systemConfig: SystemConfig
+  create2Factory: Create2Factory,
+  ayaraInstances: SystemConfig["ayaraInstances"],
+  linkToken: ERC20Mock
 ): Promise<SystemDeployed> {
-  info("Deploying System");
-  const { ayaraConfig, ayaraInstances } = getSystemConfig(hre);
-  let deploymentOverrides = {
-    gasPrice: hre.ethers.parseUnits("1.0", "gwei"),
-  };
-
-  const create2Factory = await deployContract<Create2Factory>(
-    hre,
-    signer,
-    "Create2Factory",
-    [],
-    deploymentOverrides
-  );
+  log("Deploying System for Local");
 
   const ccipRouterMock = await deployContractWithCreate2<
     CCIPRouterMock,
@@ -110,16 +202,19 @@ export async function deploySystem(
     "CCIPRouterMock",
     []
   );
-
   const router = await ccipRouterMock.getAddress();
-  info(`CCIPRouterMock: ${router}`);
+  const link = await linkToken.getAddress();
+  const options = { useCreate2: true, router, link, localTest: true };
+
+  log(`CCIPRouterMock: ${router}`);
+  log(`LinkToken: ${link}`);
 
   const ayaraControllerPrimary = await deployAyaraController(
     hre,
     signer,
     create2Factory,
     ayaraInstances.sepolia,
-    { useCreate2: true, router }
+    options
   );
 
   const ayaraControllerOptimism = await deployAyaraController(
@@ -127,7 +222,7 @@ export async function deploySystem(
     signer,
     create2Factory,
     ayaraInstances.optimism,
-    { useCreate2: true, router }
+    options
   );
 
   const ayaraControllerBase = await deployAyaraController(
@@ -135,9 +230,8 @@ export async function deploySystem(
     signer,
     create2Factory,
     ayaraInstances.base,
-    { useCreate2: true, router }
+    options
   );
-
   // Set the addresses of the controllers on the CCIPRouterMock
   await ccipRouterMock._mockSetChainSelectorsToContracts(
     [
@@ -152,91 +246,11 @@ export async function deploySystem(
     ]
   );
 
-  const mocks = await deployMocks(hre, signer, create2Factory);
   return {
     create2Factory,
-    ayaraControllerPrimary: ayaraControllerPrimary,
-    ayaraControllerOptimism: ayaraControllerOptimism,
-    ayaraControllerBase: ayaraControllerBase,
-    mocks,
+    ayaraControllerPrimary,
+    ayaraControllerOptimism,
+    ayaraControllerBase,
     ccipRouterMock,
   };
-}
-
-export async function deployAyaraController(
-  hre: HardhatRuntimeEnvironment,
-  signer: Signer,
-  create2Factory: Create2Factory,
-  ayaraInstance: { chainId: number; name: string },
-  options?: {
-    router?: string;
-    linkToken?: string;
-    useCreate2?: boolean;
-  }
-): Promise<AyaraController> {
-  let router = options?.router;
-  let linkToken =
-    options?.linkToken || "0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF";
-
-  logger("info", "deployAyaraController", ayaraInstance.name);
-  logger("info", `chainId: ${ayaraInstance.chainId}`);
-
-  logger("info", `router: ${router}`);
-
-  const deploymentOverrides = {
-    gasPrice: hre.ethers.parseUnits("1.0", "gwei"),
-  };
-
-  const deployCreate2Options = {
-    overrides: deploymentOverrides,
-    create2Options: { amount: 0, salt: ayaraInstance.name, callbacks: [] },
-    waitForBlocks: 0,
-  };
-
-  const withSalt = (salt: string) => ({
-    ...deployCreate2Options,
-    create2Options: { ...deployCreate2Options.create2Options, salt },
-  });
-
-  let ayaraController: AyaraController;
-
-  if (!options?.useCreate2) {
-    ayaraController = await deployContract<AyaraController>(
-      hre,
-      signer,
-      "AyaraController",
-      [
-        await signer.getAddress(),
-        hre.ethers.encodeBytes32String(ayaraInstance.name),
-        ayaraInstance.chainId,
-        [],
-        router,
-        linkToken,
-      ],
-      deploymentOverrides
-    );
-
-    return ayaraController;
-  } else {
-    ayaraController = await deployContractWithCreate2<
-      AyaraController,
-      AyaraController__factory
-    >(
-      hre,
-      new AyaraController__factory(),
-      create2Factory,
-      "AyaraController",
-      [
-        await signer.getAddress(),
-        hre.ethers.encodeBytes32String(ayaraInstance.name),
-        ayaraInstance.chainId,
-        [],
-        router,
-        linkToken,
-      ],
-      withSalt(ayaraInstance.name)
-    );
-  }
-
-  return ayaraController;
 }
