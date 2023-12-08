@@ -6,15 +6,47 @@
     "inputs": [
       {
         "type": "address",
-        "name": "proxyAdmin_"
+        "name": "initialOwner_"
       },
       {
-        "type": "uint256",
+        "type": "bytes32",
         "name": "salt_"
       },
       {
         "type": "uint256",
         "name": "chainId_"
+      },
+      {
+        "type": "address[]",
+        "name": "gasTokens_"
+      },
+      {
+        "type": "address",
+        "name": "router_"
+      },
+      {
+        "type": "address",
+        "name": "link_"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "AddressEmptyCode",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "target"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "AddressInsufficientBalance",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "account"
       }
     ]
   },
@@ -44,6 +76,87 @@
   },
   {
     "type": "error",
+    "name": "FailedInnerCall",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidAmount",
+    "inputs": [
+      {
+        "type": "uint256",
+        "name": "relayerFee"
+      },
+      {
+        "type": "uint256",
+        "name": "maxFee"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InvalidRouter",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "router"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InvalidWallet",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "wallet"
+      },
+      {
+        "type": "address",
+        "name": "expectedWallet"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "NativeTokenNotSupported",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NotApprovedGasToken",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "token"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "NotEnoughGas",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "token"
+      },
+      {
+        "type": "uint256",
+        "name": "amountNeeded"
+      },
+      {
+        "type": "uint256",
+        "name": "amountAvailable"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "OperationFailed",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "OwnableInvalidOwner",
     "inputs": [
       {
@@ -59,6 +172,16 @@
       {
         "type": "address",
         "name": "account"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SafeERC20FailedOperation",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "token"
       }
     ]
   },
@@ -85,6 +208,130 @@
       {
         "type": "address",
         "name": "deployed",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "GasTokensModified",
+    "inputs": [
+      {
+        "type": "address[]",
+        "name": "tokens"
+      },
+      {
+        "type": "bool",
+        "name": "enabled",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "MessageReceived",
+    "inputs": [
+      {
+        "type": "bytes32",
+        "name": "latestMessageId",
+        "indexed": false
+      },
+      {
+        "type": "uint64",
+        "name": "latestSourceChainSelector",
+        "indexed": false
+      },
+      {
+        "type": "address",
+        "name": "latestSender",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "MessageSent",
+    "inputs": [
+      {
+        "type": "bytes32",
+        "name": "messageId",
+        "indexed": true
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "OperationExecuted",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "wallet",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "to",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "value",
+        "indexed": false
+      },
+      {
+        "type": "bytes",
+        "name": "data",
+        "indexed": false
+      },
+      {
+        "type": "bytes",
+        "name": "signature",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "OperationExecutionSent",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "wallet",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "to",
+        "indexed": true
+      },
+      {
+        "type": "uint64",
+        "name": "destinationChainId",
+        "indexed": false
+      },
+      {
+        "type": "bytes",
+        "name": "data",
+        "indexed": false
+      },
+      {
+        "type": "bytes",
+        "name": "signature",
         "indexed": false
       }
     ]
@@ -124,6 +371,121 @@
     ]
   },
   {
+    "type": "event",
+    "anonymous": false,
+    "name": "WalletGasCharged",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "token",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "maxFee",
+        "indexed": false
+      },
+      {
+        "type": "uint256",
+        "name": "relayerFee",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "WalletGasFunded",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "token",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "amount",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "WalletGasLocked",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "token",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "amount",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "WalletGasSettled",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "token",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "amount",
+        "indexed": false
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "WalletGasUnlocked",
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner",
+        "indexed": true
+      },
+      {
+        "type": "address",
+        "name": "token",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "amount",
+        "indexed": false
+      }
+    ]
+  },
+  {
     "type": "function",
     "name": "VERSION",
     "constant": true,
@@ -139,6 +501,92 @@
   },
   {
     "type": "function",
+    "name": "addFundsToWallet",
+    "constant": false,
+    "stateMutability": "payable",
+    "payable": true,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner_"
+      },
+      {
+        "type": "address",
+        "name": "token_"
+      },
+      {
+        "type": "uint256",
+        "name": "amount_"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "calculateWalletAddress",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner_"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "ccipReceive",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "tuple",
+        "name": "message",
+        "components": [
+          {
+            "type": "bytes32",
+            "name": "messageId"
+          },
+          {
+            "type": "uint64",
+            "name": "sourceChainSelector"
+          },
+          {
+            "type": "bytes",
+            "name": "sender"
+          },
+          {
+            "type": "bytes",
+            "name": "data"
+          },
+          {
+            "type": "tuple[]",
+            "name": "destTokenAmounts",
+            "components": [
+              {
+                "type": "address",
+                "name": "token"
+              },
+              {
+                "type": "uint256",
+                "name": "amount"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
     "name": "chainId",
     "constant": true,
     "stateMutability": "view",
@@ -147,6 +595,25 @@
     "outputs": [
       {
         "type": "uint256",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "chainIdToChainSelector",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "uint64",
+        "name": ""
+      }
+    ],
+    "outputs": [
+      {
+        "type": "uint64",
         "name": ""
       }
     ]
@@ -182,11 +649,11 @@
     "inputs": [
       {
         "type": "address",
-        "name": "owner"
+        "name": "owner_"
       },
       {
         "type": "bytes[]",
-        "name": "callbacks"
+        "name": "callbacks_"
       }
     ],
     "outputs": [
@@ -228,6 +695,241 @@
   },
   {
     "type": "function",
+    "name": "executeUserOperation",
+    "constant": false,
+    "stateMutability": "payable",
+    "payable": true,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner_"
+      },
+      {
+        "type": "address",
+        "name": "wallet_"
+      },
+      {
+        "type": "tuple",
+        "name": "feeData_",
+        "components": [
+          {
+            "type": "address",
+            "name": "token"
+          },
+          {
+            "type": "uint256",
+            "name": "maxFee"
+          },
+          {
+            "type": "uint256",
+            "name": "relayerFee"
+          }
+        ]
+      },
+      {
+        "type": "tuple",
+        "name": "transaction_",
+        "components": [
+          {
+            "type": "uint64",
+            "name": "destinationChainId"
+          },
+          {
+            "type": "address",
+            "name": "to"
+          },
+          {
+            "type": "uint256",
+            "name": "value"
+          },
+          {
+            "type": "bytes",
+            "name": "data"
+          },
+          {
+            "type": "bytes",
+            "name": "signature"
+          }
+        ]
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "finalizeSettlement",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner_"
+      },
+      {
+        "type": "address",
+        "name": "token_"
+      },
+      {
+        "type": "uint256",
+        "name": "amount_"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "getLatestMessageDetails",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "bytes32",
+        "name": ""
+      },
+      {
+        "type": "uint64",
+        "name": ""
+      },
+      {
+        "type": "address",
+        "name": ""
+      },
+      {
+        "type": "string",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getRouter",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "getUserGasData",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner_"
+      },
+      {
+        "type": "address",
+        "name": "token_"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "tuple",
+        "name": "gasData",
+        "components": [
+          {
+            "type": "uint256",
+            "name": "totalAmount"
+          },
+          {
+            "type": "uint256",
+            "name": "lockedAmount"
+          },
+          {
+            "type": "uint256",
+            "name": "usedAmount"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "initiateSettlement",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "owner_"
+      },
+      {
+        "type": "address",
+        "name": "token_"
+      },
+      {
+        "type": "uint64",
+        "name": "destinationChainId_"
+      },
+      {
+        "type": "address",
+        "name": "ayaraController_"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "isGasToken",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ],
+    "outputs": [
+      {
+        "type": "bool",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "link",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "modifyGasTokens",
+    "constant": false,
+    "payable": false,
+    "inputs": [
+      {
+        "type": "address[]",
+        "name": "gasTokens_"
+      },
+      {
+        "type": "bool",
+        "name": "enabled_"
+      }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
     "name": "owner",
     "constant": true,
     "stateMutability": "view",
@@ -250,6 +952,20 @@
   },
   {
     "type": "function",
+    "name": "router",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "address",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
     "name": "salt",
     "constant": true,
     "stateMutability": "view",
@@ -258,6 +974,25 @@
     "outputs": [
       {
         "type": "bytes32",
+        "name": ""
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "supportsInterface",
+    "constant": true,
+    "stateMutability": "pure",
+    "payable": false,
+    "inputs": [
+      {
+        "type": "bytes4",
+        "name": "interfaceId"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "bool",
         "name": ""
       }
     ]

@@ -8,7 +8,8 @@ import { deploySystem } from "../scripts/deploy";
 import { getCommonSigners } from "../utils/signers";
 import { logger } from "../utils/deployUtils";
 
-import { createWalletAndGetAddress, formatSignData } from "./test-utils";
+import { createWalletAndGetAddress } from "./test-utils";
+import { generateSignature } from "../utils/signature";
 
 // Initialize logger for test logs
 const log = logger("log", "test");
@@ -18,40 +19,19 @@ const systemConfig = getSystemConfig(hre);
 
 // Helper functions
 
-describe("AyaraMain", function () {
-  const CHAIN_ID = 31337;
+describe("AyaraController: AyaraWalletInstance", function () {
+  const CHAIN_ID = 11155111;
   // This fixture deploys the contract and returns it
   const setup = async () => {
     // Get signers
     const { alice, bob, deployer, relayer } = await getCommonSigners(hre);
 
     const {
-      ayaraController,
+      ayaraControllerPrimary: ayaraController,
       mocks: { erc20Mock },
     } = await deploySystem(hre, deployer, systemConfig);
     return { alice, bob, deployer, relayer, ayaraController, erc20Mock };
   };
-
-  it("Should successfully deploy", async function () {
-    const { ayaraController, deployer } = await loadFixture(setup);
-    const ayaraControllerInstance = ayaraController.connect(deployer);
-
-    expect(await ayaraControllerInstance.getAddress()).to.not.equal(
-      ethers.ZeroAddress
-    );
-    expect(await ayaraControllerInstance.getAddress()).to.be.properAddress;
-
-    expect(await ayaraControllerInstance.VERSION()).to.equal(1);
-    expect(await ayaraControllerInstance.salt()).to.equal(
-      systemConfig.ayaraConfig.salt
-    );
-    expect(await ayaraControllerInstance.chainId()).to.equal(CHAIN_ID);
-
-    const adminAddress = await ayaraControllerInstance.owner();
-    log(`adminAddress: ${adminAddress}`);
-    const deployerAddress = await deployer.getAddress();
-    expect(adminAddress).to.equal(deployerAddress);
-  });
   describe("AyaraWalletInstace: Wallet creation and addresses tests", async function () {
     let aliceWalletAddress: string;
     let bobWalletAddress: string;
@@ -314,8 +294,11 @@ describe("AyaraMain", function () {
         ethers.parseEther("1000"),
       ]);
 
-      const message = await formatSignData(ayaraWalletInstanceAlice, data);
-      const signature = await alice.signMessage(ethers.getBytes(message));
+      const signature = await generateSignature(
+        alice,
+        ayaraWalletInstanceAlice,
+        data
+      );
 
       const ayaraWalletInstanceRelayer = (
         await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
@@ -361,8 +344,11 @@ describe("AyaraMain", function () {
         ethers.parseEther("1000"),
       ]);
 
-      const message = await formatSignData(ayaraWalletInstanceAlice, data);
-      const signature = await relayer.signMessage(ethers.getBytes(message));
+      const signature = await generateSignature(
+        relayer,
+        ayaraWalletInstanceAlice,
+        data
+      );
 
       const ayaraWalletInstanceRelayer = (
         await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
@@ -413,17 +399,12 @@ describe("AyaraMain", function () {
 
       const nonce = await ayaraWalletInstanceAlice.nonce();
 
-      const message = ethers.solidityPacked(
-        ["address", "address", "uint256", "uint256", "bytes"],
-        [
-          await ayaraWalletInstanceAlice.ownerAddress(),
-          await ayaraWalletInstanceAlice.controllerAddress(),
-          CHAIN_ID,
-          nonce + 1n,
-          data,
-        ]
+      const signature = await generateSignature(
+        alice,
+        ayaraWalletInstanceAlice,
+        data,
+        { nonce: nonce + 1n }
       );
-      const signature = await alice.signMessage(ethers.getBytes(message));
 
       const ayaraWalletInstanceRelayer = (
         await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
@@ -469,13 +450,15 @@ describe("AyaraMain", function () {
       // Get data and nonce for the transaction
       const data = erc20Mock.interface.encodeFunctionData("transfer", [
         await bob.getAddress(),
-        ethers.parseEther("500"),
+        ethers.parseEther("100"),
       ]);
 
-      const nonce = await ayaraWalletInstanceAlice.nonce();
-
-      const message = await formatSignData(ayaraWalletInstanceAlice, data);
-      const signature = await alice.signMessage(ethers.getBytes(message));
+      // Send a transaction so that the nonce is incremented
+      const signature = await generateSignature(
+        alice,
+        ayaraWalletInstanceAlice,
+        data
+      );
 
       const ayaraWalletInstanceRelayer = (
         await ethers.getContractAt("AyaraWalletInstance", aliceWalletAddress)
@@ -489,18 +472,23 @@ describe("AyaraMain", function () {
       );
       await tx2.wait();
 
-      // confirm that the nonce has been incremented
-      const nonceAfter = await ayaraWalletInstanceAlice.nonce();
-      expect(nonceAfter).to.equal(nonce + 1n);
+      // // confirm that the nonce has been incremented
+      const nonce2 = await ayaraWalletInstanceAlice.nonce();
+      expect(nonce2).to.equal(1n);
 
-      // Try again to send with the same nonce
+      const signature2 = await generateSignature(
+        alice,
+        ayaraWalletInstanceAlice,
+        data,
+        { nonce: 0n }
+      );
+
       const tx3 = ayaraWalletInstanceRelayer.execute(
         await erc20Mock.getAddress(),
         0,
         data, // Data for transfer
-        signature
+        signature2
       );
-
       await expect(tx3).to.revertedWithCustomError(
         ayaraWalletInstanceRelayer,
         "InvalidSignature"
