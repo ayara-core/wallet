@@ -26,9 +26,9 @@ function App() {
       try {
         const chainConfig = {
           chainNamespace: CHAIN_NAMESPACES.EIP155,
-          chainId: "0x7A69",
-          rpcTarget: "http://127.0.0.1:8545",
-          displayName: "Local Hardhat",
+          chainId: "0xaa36a7",
+          rpcTarget: "https://1rpc.io/sepolia",
+          displayName: "Sepolia",
           blockExplorer: "https://optimistic.etherscan.io",
           ticker: "ETH",
           tickerName: "Ethereum",
@@ -64,16 +64,18 @@ function App() {
   const updateChain = async ({ chainId }: { chainId: string }) => {
     try {
       console.log(chainId, ChainConfigs);
-      const selectedChain = ChainConfigs.find((config: any) => config.chainId === chainId);
+      const selectedChain = ChainConfigs.find(
+        (config: any) => config.chainId === chainId
+      );
       const chainConfig = {
         chainNamespace: CHAIN_NAMESPACES.EIP155,
-        chainId: "0x7A69",
-        rpcTarget: "http://127.0.0.1:8545",
-        displayName: "Local Hardhat",
+        chainId: "0xaa36a7",
+        rpcTarget: "https://1rpc.io/sepolia",
+        displayName: "Sepolia",
         blockExplorer: "https://optimistic.etherscan.io",
         ticker: "ETH",
         tickerName: "Ethereum",
-        ...selectedChain
+        ...selectedChain,
       };
 
       const web3auth = new Web3AuthNoModal({
