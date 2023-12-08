@@ -1,7 +1,7 @@
 import type { Signer } from "ethers";
-import { ethers } from "hardhat";
 
 import type { AyaraWalletInstance, AyaraController } from "../typechain-types";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 const DOMAIN_TYPE = {
   name: "Ayara",
@@ -36,6 +36,7 @@ interface Message {
 }
 
 export async function generateSignature(
+  hre: HardhatRuntimeEnvironment,
   signer: Signer,
   ayaraWallet: AyaraWalletInstance,
   data: string,
@@ -52,7 +53,7 @@ export async function generateSignature(
     ownerAddress: await signer.getAddress(),
     controllerAddress: await ayaraWallet.controllerAddress(),
     nonce: await ayaraWallet.nonce(),
-    data: ethers.keccak256(data),
+    data: hre.ethers.keccak256(data),
   };
 
   if (overrides) {
@@ -63,6 +64,7 @@ export async function generateSignature(
 }
 
 export async function generateSignatureForUninitializedWallet(
+  hre: HardhatRuntimeEnvironment,
   signer: Signer,
   ayaraController: AyaraController,
   data: string,
@@ -77,7 +79,7 @@ export async function generateSignatureForUninitializedWallet(
     ownerAddress: await signer.getAddress(),
     controllerAddress: await ayaraController.getAddress(),
     nonce: 0,
-    data: ethers.keccak256(data),
+    data: hre.ethers.keccak256(data),
   };
 
   if (overrides) {

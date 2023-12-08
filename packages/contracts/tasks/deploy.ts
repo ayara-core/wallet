@@ -1,6 +1,5 @@
 import { subtask, task, types } from "hardhat/config";
 import { deploySystem } from "../scripts/deploy";
-import { getSystemConfig } from "../utils/deployConfig";
 import { logger } from "../utils/deployUtils";
 import { getDeployedAddress } from "../utils/saveAddress";
 const log = logger("log", "task");
