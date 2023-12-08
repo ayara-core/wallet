@@ -1,10 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Header from '../components/Header';
 import { useNavigate } from 'react-router-dom';
 
 
 const Onboarding4: React.FC = () => {
   const navigate = useNavigate();
+
+  // Check if already onboarded
+  useEffect(() => {
+    const hasOnboarded = localStorage.getItem("hasOnboarded");
+    if (!hasOnboarded) {
+      localStorage.setItem("hasOnboarded", "true");
+    }
+  }, []);
 
   return (
     <div className="container">

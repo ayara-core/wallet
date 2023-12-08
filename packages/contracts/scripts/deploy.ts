@@ -238,5 +238,6 @@ export async function deployAyaraController(
     );
   }
 
+  console.log(ayaraController);
   return ayaraController;
 }

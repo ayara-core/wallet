@@ -1,39 +1,24 @@
-import React from "react";
-import { useEffect, useState, useCallback } from "react";
-import { Web3AuthNoModal } from "@web3auth/no-modal";
-import { CHAIN_NAMESPACES, IProvider, WALLET_ADAPTERS } from "@web3auth/base";
-import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
-import { OpenloginAdapter } from "@web3auth/openlogin-adapter";
-import RPC from "../web3RPC"; // for using web3.js
-import Header from "../components/Header";
-import chainlinkLogo from "../assets/chainlink-logo-white.png";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
 
-const clientId =
-  "BFroo1J0Yx9-vnNmi1hlf7EiwgBWZx-YdCU0F1yBxzDmKpaQ7t-x34CioYb1oc-3lHM3LeH3mQTu-g0qYSacAHE";
+import RPC from "../web3RPC"; // for using web3.js
+import ChainConfigs from "../chainConfig.json";
 
-function Dashboard() {
-  const [web3auth, setWeb3auth] = useState<Web3AuthNoModal | null>(null);
-  const [provider, setProvider] = useState<IProvider | null>(null);
-  const [, setOutput] = useState<string>("");
+const Dashboard: React.FC<{
+  web3auth: any;
+  provider: any;
+  setProvider: any;
+  updateChain: any;
+}> = ({ web3auth, provider, setProvider, updateChain }) => {
   const navigate = useNavigate();
 
-  const [smartWalletAddress, setSmartWalletAddress] = useState<string>("");
-
+  // Check if already onboarded
   useEffect(() => {
-    const fetchSmartWalletAddress = async () => {
-      if (!provider) {
-        setSmartWalletAddress("");
-        return;
-      }
-      const rpc = new RPC(provider);
-      const address = await rpc.getAccounts();
-      setSmartWalletAddress(address);
-    };
-
-    fetchSmartWalletAddress();
-  }, [provider]);
+    const hasOnboarded = localStorage.getItem("hasOnboarded");
+    if (!hasOnboarded) {
+      navigate("/onboard/1");
+    }
+  }, []);
 
   const displayAddress = (str: string): string => {
     if (str.length <= 10) {
@@ -44,79 +29,16 @@ function Dashboard() {
     return `${firstFive}...${lastFive}`;
   };
 
-  useEffect(() => {
-    const init = async () => {
-      try {
-        const chainConfig = {
-          chainNamespace: CHAIN_NAMESPACES.EIP155,
-          chainId: "0xaa36a7",
-          rpcTarget: "https://ethereum-sepolia.blockpi.network/v1/rpc/public",
-          displayName: "Sepolia",
-          blockExplorer: "https://optimistic.etherscan.io",
-          ticker: "ETH",
-          tickerName: "Ethereum",
-        };
-        const web3auth = new Web3AuthNoModal({
-          clientId,
-          chainConfig,
-          web3AuthNetwork: "sapphire_devnet",
-        });
-
-        setWeb3auth(web3auth);
-
-        const privateKeyProvider = new EthereumPrivateKeyProvider({
-          config: { chainConfig },
-        });
-
-        const openloginAdapter = new OpenloginAdapter({
-          privateKeyProvider,
-        });
-        web3auth.configureAdapter(openloginAdapter);
-        setWeb3auth(web3auth);
-
-        await web3auth.init();
-        setProvider(web3auth.provider);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    init();
-  }, []);
-
-  const login = async () => {
-    if (!web3auth) {
-      uiConsole("web3auth not initialized yet");
-      return;
-    }
-    const web3authProvider = await web3auth.connectTo(
-      WALLET_ADAPTERS.OPENLOGIN,
-      {
-        loginProvider: "google",
-      }
-    );
-    setProvider(web3authProvider);
-
-    if (!provider) {
-      return;
-    }
-    const rpc = await new RPC(provider);
-    const address = await rpc.getAccounts();
-    navigate("/onboard/1", { state: { address: address[0] } }); // pass wallet address to onboarding page
-  };
-
   const logout = async () => {
     if (!web3auth) {
-      uiConsole("web3auth not initialized yet");
       return;
     }
     await web3auth.logout();
     setProvider(null);
   };
 
-  const getAccounts = async () => {
+  const getAccountAddress = async () => {
     if (!provider) {
-      uiConsole("provider not initialized yet");
       return;
     }
     const rpc = new RPC(provider);
@@ -124,19 +46,9 @@ function Dashboard() {
     navigator.clipboard.writeText(address);
   };
 
-  const signMessage = async () => {
-    if (!provider) {
-      uiConsole("provider not initialized yet");
-      return;
-    }
-    const rpc = new RPC(provider);
-    const signedMessage = await rpc.signMessage();
-    uiConsole(signedMessage);
-  };
-
   const sendTransactionWithABI = async () => {
     if (!provider) {
-      uiConsole("provider not initialized yet");
+      alert("provider not initialized yet");
       return;
     }
     const rpc = new RPC(provider);
@@ -156,25 +68,44 @@ function Dashboard() {
         [],
         "0"
       );
-      console.log(receipt);
+      alert(receipt);
     } catch (error) {
-      console.log(error);
+      alert(error);
     }
   };
 
-  function uiConsole(...args: any[]): void {
-    setOutput(JSON.stringify(args));
-  }
+  const [selectedNetwork, setSelectedNetwork] = useState(() => {
+    const chainId = provider.defaultConfig.chainConfig.chainId;
+    const selectedChain = ChainConfigs.find(
+      (config: any) => config.chainId === chainId
+    );
+    return selectedChain?.displayName;
+  });
 
-  const loggedInView = (
+  return (
     <div className="artboard w-extension h-extension flex flex-col items-center justify-start pt-4">
       {/* Dropdown */}
-      <select className="select select-bordered select-xs rounded-full">
-        <option selected>Optimism</option>
-        <option>Base</option>
+      <select
+        className="select select-bordered select-xs rounded-full"
+        value={selectedNetwork}
+        onChange={(e) => {
+          setSelectedNetwork(e.target.value);
+          const selectedChain = ChainConfigs.find(
+            (config: any) => config.displayName === e.target.value
+          );
+          if (selectedChain) {
+            updateChain({ chainId: selectedChain?.chainId });
+          } else {
+            updateChain({ chainId: "0x7A69" });
+          }
+        }}
+      >
+        {ChainConfigs.map(({ displayName }) => (
+          <option value={displayName}>{displayName}</option>
+        ))}
       </select>
       {/* Address */}
-      <button className="btn btn-link" onClick={getAccounts}>
+      <button className="btn btn-link" onClick={getAccountAddress}>
         <div className="badge badge-lg badge-secondary font-lg">
           {displayAddress("0xC499D300d7a53Cb9d7946121E5982bdf8D4b0eA6")}
           <svg
@@ -284,42 +215,6 @@ function Dashboard() {
       </button>
     </div>
   );
-
-  const unloggedInView = (
-    <>
-      <div className="container">
-        <Header />
-        <div className="px-5">
-          <img src={chainlinkLogo} alt="Chainlink Logo" className="mb-3" />
-          <p className="text-secondary text-xl">Universal Gas Wallet</p>
-          <p className="text-primary text-xl">
-            Use any dapp on L2 without gas bridging
-          </p>
-        </div>
-        <div className="flex mt-12 items-end justify-center">
-          <div className="mx-auto text-center w-full">
-            <button className="btn btn-accent" onClick={login}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="currentColor"
-                className="bi bi-google"
-                viewBox="0 0 16 16"
-              >
-                <path d="M15.545 6.558a9.42 9.42 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.689 7.689 0 0 1 5.352 2.082l-2.284 2.284A4.347 4.347 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.792 4.792 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.702 3.702 0 0 0 1.599-2.431H8v-3.08h7.545z" />
-              </svg>
-              Sign in with Google
-            </button>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-
-  return (
-    <div>{web3auth && web3auth.connected ? loggedInView : unloggedInView}</div>
-  );
-}
+};
 
 export default Dashboard;
