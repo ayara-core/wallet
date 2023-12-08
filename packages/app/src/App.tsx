@@ -26,9 +26,9 @@ function App() {
       try {
         const chainConfig = {
           chainNamespace: CHAIN_NAMESPACES.EIP155,
-          chainId: "0xaa36a7",
-          rpcTarget: "https://1rpc.io/sepolia",
-          displayName: "Sepolia",
+          chainId: "0x1a4",
+          rpcTarget: "https://optimism-goerli.publicnode.com",
+          displayName: "Optimism Goerli",
           blockExplorer: "https://optimistic.etherscan.io",
           ticker: "ETH",
           tickerName: "Ethereum",

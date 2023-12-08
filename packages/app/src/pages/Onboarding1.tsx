@@ -1,14 +1,18 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
 import chainlinkLogo from "../assets/chainlink-logo-white.png";
 import { Link } from "react-router-dom";
 
 import RPC from "../web3RPC"; // for using web3.js
 
+import { createWallet, getWallet } from '../utils/walletInstance';
+
 const Onboarding1: React.FC<{ web3auth: any; provider: any }> = ({
   web3auth,
   provider,
 }) => {
+  const [loading, setLoading] = useState<boolean>(false);
+
   const getAddress = async () => {
     if (!provider) {
       return;
@@ -23,43 +27,21 @@ const Onboarding1: React.FC<{ web3auth: any; provider: any }> = ({
       alert("provider is not ready!");
       return;
     }
+    setLoading(true);
     const rpc = new RPC(provider);
-    const ownerAddress = await getAddress();
+    const ownerAddress = (await getAddress())[0];
+    const smartWalletAddress = await getWallet(rpc, "0x82aC90cbE27D57313a36C51f4d70645B781eED97");
     try {
-      const receipt = await rpc.sendTransactionWithABI(
-        [
-          {
-            type: "function",
-            name: "createWallet",
-            constant: false,
-            payable: false,
-            inputs: [
-              {
-                type: "address",
-                name: "owner_",
-              },
-              {
-                type: "bytes[]",
-                name: "callbacks_",
-              },
-            ],
-            outputs: [
-              {
-                type: "address",
-                name: "",
-              },
-            ],
-          },
-        ],
-        "0x315245Ca970555874e4dE9455E571D8A27f49320",
-        "createWallet(address,bytes[])",
-        [ownerAddress, []],
-        "0"
-      );
-      console.log(receipt);
+      // No smart wallet
+      if (smartWalletAddress === "0x0000000000000000000000000000000000000000") {
+        await createWallet(rpc, ownerAddress);
+        const createdSmartWalletAddress = await getWallet(rpc, "0x82aC90cbE27D57313a36C51f4d70645B781eED97");
+        console.log(createdSmartWalletAddress);
+      }
     } catch (error) {
       console.log(error);
     }
+    setLoading(false);
   };
 
   useEffect(() => {

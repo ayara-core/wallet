@@ -99,6 +99,22 @@ export default class EthereumRpc {
       return error as string;
     }
   }
+  
+  async readSmartContractWithABI(abi: any[], contractAddress: string, method: string, params: any): Promise<any> {
+    try {
+      const web3 = new Web3(this.provider as any);
+
+      // Create contract instance
+      const contract = new web3.eth.Contract(abi, contractAddress);
+      // @ts-ignore
+      // Call the contract method and get the result
+      const result = await contract.methods[method](...params).call();
+
+      return result;
+    } catch (error) {
+      return error as string;
+    }
+  }
 
   async signMessage() {
     try {

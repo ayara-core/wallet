@@ -22,5 +22,13 @@
         "blockExplorer": "https://optimistic.etherscan.io",
         "ticker": "ETH",
         "tickerName": "Ethereum"
+    },
+    {
+        "chainId": "0x1a4",
+        "rpcTarget": "https://optimism-goerli.publicnode.com",
+        "displayName": "Optimism Goerli",
+        "blockExplorer": "https://optimistic.etherscan.io",
+        "ticker": "ETH",
+        "tickerName": "Ethereum"
     }
 ]

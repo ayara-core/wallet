@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import RPC from "../web3RPC"; // for using web3.js
 import ChainConfigs from "../chainConfig.json";
 
+import { createWallet, getWallet } from '../utils/walletInstance';
+
 const Dashboard: React.FC<{
   web3auth: any;
   provider: any;
@@ -17,7 +19,8 @@ const Dashboard: React.FC<{
   // Check if already onboarded
   useEffect(() => {
     const hasOnboarded = localStorage.getItem("hasOnboarded");
-    if (!hasOnboarded) {
+    // if (!hasOnboarded) {
+    if (true) {
       navigate("/onboard/1");
     }
   }, []);
