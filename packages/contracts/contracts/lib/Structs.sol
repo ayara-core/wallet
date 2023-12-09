@@ -29,7 +29,8 @@ struct Transaction {
  * @dev Represents the fee data in the system.
  */
 struct FeeData {
-    address token; // The token associated with the fee
+    address tokenSource; // The token associated with the fee
+    address tokenDestination; // The token to be used for the fee
     uint256 maxFee; // The maximum fee, set by the user
     uint256 relayerFee; // The fee for the relayer, set by the relayer
 }

@@ -3,6 +3,8 @@ pragma solidity ^0.8.23;
 
 import "../lib/SignatureValidator.sol";
 
+import "hardhat/console.sol";
+
 /**
  * @title AyaraWalletInstance
  * @dev This contract is a wallet instance that supports execution of arbitrary calls.
@@ -19,7 +21,6 @@ contract AyaraWalletInstance {
     address public immutable controllerAddress;
     uint256 public immutable chainId;
     uint256 public nonce;
-    uint256 public mainWalletChainId;
 
     receive() external payable {}
 
@@ -27,16 +28,12 @@ contract AyaraWalletInstance {
      * @dev Initializes the contract setting the owner and controller addresses.
      * @param ownerAddress_ The address of the owner.
      * @param controllerAddress_ The address of the controller.
-     * @param chainId_ The chain ID.
+
      */
-    constructor(
-        address ownerAddress_,
-        address controllerAddress_,
-        uint256 chainId_
-    ) {
+    constructor(address ownerAddress_, address controllerAddress_) {
         ownerAddress = ownerAddress_;
         controllerAddress = controllerAddress_;
-        chainId = chainId_;
+        chainId = block.chainid;
         nonce = 0;
     }
 

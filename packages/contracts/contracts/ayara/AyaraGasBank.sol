@@ -266,8 +266,8 @@ contract AyaraGasBank is Ownable {
      */
     function _chargeFee(address owner_, FeeData memory feeData_) internal {
         // Check if token is approved
-        if (!isGasToken[feeData_.token])
-            revert NotApprovedGasToken(feeData_.token);
+        if (!isGasToken[feeData_.tokenSource])
+            revert NotApprovedGasToken(feeData_.tokenSource);
 
         // Check if relayer fee is valid
         if (feeData_.relayerFee > feeData_.maxFee)
@@ -275,28 +275,32 @@ contract AyaraGasBank is Ownable {
 
         // Get gas data
         GasData memory gasData = userGasData[owner_].gasReserves[
-            feeData_.token
+            feeData_.tokenSource
         ];
 
         // Calculate available amount
-        uint256 availableAmount = _getAvailableGas(owner_, feeData_.token);
+        uint256 availableAmount = _getAvailableGas(
+            owner_,
+            feeData_.tokenSource
+        );
 
         // Check if there is enough gas
         if (availableAmount < feeData_.relayerFee)
             revert NotEnoughGas(
-                feeData_.token,
+                feeData_.tokenSource,
                 feeData_.maxFee,
                 gasData.totalAmount
             );
 
         // Update gas data
-        userGasData[owner_].gasReserves[feeData_.token].usedAmount += feeData_
-            .relayerFee;
+        userGasData[owner_]
+            .gasReserves[feeData_.tokenSource]
+            .usedAmount += feeData_.relayerFee;
 
         // Emit event
         emit WalletGasCharged(
             owner_,
-            feeData_.token,
+            feeData_.tokenSource,
             feeData_.maxFee,
             feeData_.relayerFee
         );

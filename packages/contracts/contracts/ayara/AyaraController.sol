@@ -59,7 +59,7 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
     function calculateWalletAddress(
         address owner_
     ) external view returns (address) {
-        return _calculateWalletAddress(owner_, chainId, salt);
+        return _calculateWalletAddress(owner_, salt);
     }
 
     /**
@@ -72,7 +72,7 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
         address owner_,
         bytes[] calldata callbacks_
     ) external returns (address) {
-        return _createWallet(owner_, callbacks_, chainId, salt);
+        return _createWallet(owner_, callbacks_, salt);
     }
 
     // ----------------- Redirects to AyaraGasBank -----------------
@@ -89,19 +89,10 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
         uint256 amount_
     ) public payable {
         // Create wallet if not exists
-        _createWalletIfNotExists(owner_, chainId, salt);
+        _createWalletIfNotExists(owner_, salt);
 
         // Add funds to wallet
         _transferAndFundWallet(owner_, token_, amount_);
-    }
-
-    // ----------------- Redirects to Messagehandler -----------------
-
-    function setChainIdToAyaraController(
-        uint64 chainId_,
-        address ayaraController_
-    ) external onlyOwner {
-        _setChainIdToAyaraController(chainId_, ayaraController_);
     }
 
     // ----------------- Settlements -------------
@@ -173,7 +164,7 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
         Transaction memory transaction_
     ) external payable {
         // Create wallet if not exists
-        address wallet = _createWalletIfNotExists(owner_, chainId, salt);
+        address wallet = _createWalletIfNotExists(owner_, salt);
         if (wallet != wallet_) revert InvalidWallet(wallet, wallet_);
 
         // Execute user operation
@@ -182,13 +173,13 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
             _executeUserOperationThisChain(owner_, wallet_, transaction_);
         } else {
             // lock gas first on source chain, then execute on another chain
-            uint256 lockedAmount = _lockGas(owner_, feeData_.token);
+            uint256 lockedAmount = _lockGas(owner_, feeData_.tokenSource);
             // execute on another chain, passing the locked amount as allowance
             uint256 crossChainFee = _executeUserOperationOtherChain(
                 owner_,
                 wallet_,
                 transaction_,
-                feeData_.token,
+                feeData_.tokenDestination,
                 lockedAmount
             );
 
@@ -230,11 +221,7 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
         address createdWallet;
         // If no wallet is recorded, create a new one
         if (recordedWallet == address(0))
-            createdWallet = _createWalletIfNotExists(
-                message.owner,
-                chainId,
-                salt
-            );
+            createdWallet = _createWalletIfNotExists(message.owner, salt);
 
         // Set allowance for the message owner if required
         _setAllowance(message.owner, message.token, message.lockedAmount);

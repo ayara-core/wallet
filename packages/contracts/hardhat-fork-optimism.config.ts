@@ -8,7 +8,7 @@ export default {
       chainId: 420,
       forking: {
         url: process.env.NODE_URL_OPTIMISM || "",
-        blockNumber: 18256780,
+        blockNumber: 18256700,
       },
     },
   },

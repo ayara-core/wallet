@@ -17,10 +17,11 @@ const log = logger("log", "test");
 // Load system configuration
 const systemConfig = getSystemConfig(hre);
 
+const DEFAULT_CHAIN_ID = 31337;
+
 // Helper functions
 
 describe("AyaraController: AyaraWalletInstance", function () {
-  const CHAIN_ID = 11155111;
   // This fixture deploys the contract and returns it
   const setup = async () => {
     // Get signers
@@ -29,7 +30,7 @@ describe("AyaraController: AyaraWalletInstance", function () {
     const {
       ayaraControllerPrimary: ayaraController,
       mocks: { erc20Mock } = {},
-    } = await deploySystem(hre, deployer, true);
+    } = await deploySystem(hre, deployer, { unitTest: true });
     if (!erc20Mock) {
       throw new Error("ERC20Mock not deployed");
     }
@@ -66,7 +67,7 @@ describe("AyaraController: AyaraWalletInstance", function () {
         await ayaraController.getAddress()
       );
       expect(await walletInstance.nonce()).to.equal(0);
-      expect(await walletInstance.chainId()).to.equal(CHAIN_ID);
+      expect(await walletInstance.chainId()).to.equal(DEFAULT_CHAIN_ID);
     });
     it("Should create a new Wallet for Alice", async function () {
       const { ayaraController, alice } = await loadFixture(setup);
@@ -298,6 +299,7 @@ describe("AyaraController: AyaraWalletInstance", function () {
       ]);
 
       const signature = await generateSignature(
+        hre,
         alice,
         ayaraWalletInstanceAlice,
         data
@@ -348,6 +350,7 @@ describe("AyaraController: AyaraWalletInstance", function () {
       ]);
 
       const signature = await generateSignature(
+        hre,
         relayer,
         ayaraWalletInstanceAlice,
         data
@@ -403,6 +406,7 @@ describe("AyaraController: AyaraWalletInstance", function () {
       const nonce = await ayaraWalletInstanceAlice.nonce();
 
       const signature = await generateSignature(
+        hre,
         alice,
         ayaraWalletInstanceAlice,
         data,
@@ -458,6 +462,7 @@ describe("AyaraController: AyaraWalletInstance", function () {
 
       // Send a transaction so that the nonce is incremented
       const signature = await generateSignature(
+        hre,
         alice,
         ayaraWalletInstanceAlice,
         data
@@ -480,6 +485,7 @@ describe("AyaraController: AyaraWalletInstance", function () {
       expect(nonce2).to.equal(1n);
 
       const signature2 = await generateSignature(
+        hre,
         alice,
         ayaraWalletInstanceAlice,
         data,

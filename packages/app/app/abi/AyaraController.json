@@ -601,25 +601,6 @@
   },
   {
     "type": "function",
-    "name": "chainIdToAyaraController",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [
-      {
-        "type": "uint64",
-        "name": ""
-      }
-    ],
-    "outputs": [
-      {
-        "type": "address",
-        "name": ""
-      }
-    ]
-  },
-  {
-    "type": "function",
     "name": "chainIdToChainSelector",
     "constant": true,
     "stateMutability": "view",
@@ -733,7 +714,11 @@
         "components": [
           {
             "type": "address",
-            "name": "token"
+            "name": "tokenSource"
+          },
+          {
+            "type": "address",
+            "name": "tokenDestination"
           },
           {
             "type": "uint256",
@@ -1051,23 +1036,6 @@
         "name": ""
       }
     ]
-  },
-  {
-    "type": "function",
-    "name": "setChainIdToAyaraController",
-    "constant": false,
-    "payable": false,
-    "inputs": [
-      {
-        "type": "uint64",
-        "name": "chainId_"
-      },
-      {
-        "type": "address",
-        "name": "ayaraController_"
-      }
-    ],
-    "outputs": []
   },
   {
     "type": "function",

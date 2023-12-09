@@ -22,6 +22,8 @@ import {
 import { createWalletAndGetAddress } from "./test-utils";
 import { config } from "dotenv";
 
+const DEFAULT_CHAIN_ID = 31337;
+
 // Initialize logger for test logs
 const log = logger("log", "test");
 
@@ -59,10 +61,36 @@ describe("AyaraController", function () {
     const erc20Mock = systemDeployed?.mocks?.erc20Mock;
     const ccipRouterMock = systemDeployed.ccipRouterMock;
 
+    // Set the addresses for CCIPRouterMock
+    const ayaraControllerAddress = await ayaraController.getAddress();
+    const ayaraControllerBaseAddress = ayaraControllerBase
+      ? await ayaraControllerBase.getAddress()
+      : undefined;
+    const ayaraControllerOptimismAddress = ayaraControllerOptimism
+      ? await ayaraControllerOptimism.getAddress()
+      : undefined;
+
+    const deployConfig = getSystemConfig(hre);
+
+    const tx = await ccipRouterMock?._mockSetChainSelectorsToContracts(
+      [
+        deployConfig.ayaraInstances.sepolia.chainId,
+        deployConfig.ayaraInstances.base.chainId,
+        deployConfig.ayaraInstances.optimism.chainId,
+      ],
+      [
+        ayaraControllerAddress,
+        ayaraControllerBaseAddress ?? hre.ethers.ZeroAddress,
+        ayaraControllerOptimismAddress ?? hre.ethers.ZeroAddress,
+      ]
+    );
+
+    const receipt = await tx?.wait();
+
     // Mint some tokens for Alice
     const aliceAddress = await alice.getAddress();
-    const tx = await erc20Mock?.mint(aliceAddress, ethers.parseEther("1000"));
-    await tx?.wait();
+    const tx2 = await erc20Mock?.mint(aliceAddress, ethers.parseEther("1000"));
+    await tx2?.wait();
 
     return {
       alice,
@@ -182,9 +210,14 @@ describe("AyaraController", function () {
         100,
       ]);
       const signature = await generateSignatureForUninitializedWallet(
+        hre,
         alice,
-        ayaraControllerOptimism,
-        data
+        ayaraControllerOptimism, // We need to use the main controller, since the wallet is known to have the default chainId
+        data,
+        {},
+        {
+          chainId: DEFAULT_CHAIN_ID,
+        }
       );
 
       // Allow the token to be used as fee token
@@ -203,7 +236,8 @@ describe("AyaraController", function () {
 
       // Send the transaction
       const feeData = {
-        token: tokenAddress, // Fee Token
+        tokenSource: tokenAddress, // Fee Token
+        tokenDestination: tokenAddress, // Fee Token
         maxFee: ethers.parseEther("1"), // Fee Amount
         relayerFee: 0, // Relayer Fee
       };
@@ -366,13 +400,15 @@ describe("AyaraController", function () {
       ]);
 
       const signature = await generateSignature(
+        hre,
         alice,
         ayaraWalletInstance,
         data
       );
 
       const feeData = {
-        token: tokenAddress, // Fee Token
+        tokenSource: tokenAddress, // Fee Token
+        tokenDestination: tokenAddress, // Fee Token
         maxFee: 1000, // Fee Amount
         relayerFee: 100, // Relayer Fee
       };
@@ -434,13 +470,19 @@ describe("AyaraController", function () {
       ]);
 
       const signature = await generateSignatureForUninitializedWallet(
+        hre,
         alice,
         ayaraControllerOptimism,
-        data
+        data,
+        {},
+        {
+          chainId: DEFAULT_CHAIN_ID,
+        }
       );
 
       const feeData = {
-        token: tokenAddress, // Fee Token
+        tokenSource: tokenAddress, // Fee Token
+        tokenDestination: tokenAddress, // Fee Token
         maxFee: 1000, // Fee Amount
         relayerFee: 100, // Relayer Fee
       };
@@ -499,13 +541,15 @@ describe("AyaraController", function () {
       ]);
 
       const signature = await generateSignature(
+        hre,
         alice,
         walletInstanceOptimism,
         data
       );
 
       const feeData = {
-        token: tokenAddress, // Fee Token
+        tokenSource: tokenAddress, // Fee Token
+        tokenDestination: tokenAddress, // Fee Token
         maxFee: 1000, // Fee Amount
         relayerFee: 100, // Relayer Fee
       };

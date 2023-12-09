@@ -47,7 +47,6 @@ contract AyaraSender {
     ) internal returns (uint256 fee) {
         // We pay fees in LINK, hardcoded for now
         PayFeesIn payFeesIn = PayFeesIn.LINK;
-
         Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
             receiver: abi.encode(destinationAddress),
             data: data_,

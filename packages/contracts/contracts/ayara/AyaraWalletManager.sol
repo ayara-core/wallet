@@ -55,44 +55,39 @@ contract AyaraWalletManager is AyaraMessageHandler, Create2Factory {
     /**
      * @dev Internal function to create a wallet if it does not exist.
      * @param owner_ The address of the wallet owner.
-     * @param chainId_ The chain ID.
      * @param salt_ The salt.
      * @return The address of the created wallet.
      * If the wallet already exists, it returns the address of the existing wallet.
      */
     function _createWalletIfNotExists(
         address owner_,
-        uint256 chainId_,
         bytes32 salt_
     ) internal returns (address) {
         // Check if wallet already exists
         if (wallets[owner_] != address(0)) return wallets[owner_];
 
         // Create wallet
-        return _createWallet(owner_, chainId_, salt_);
+        return _createWallet(owner_, salt_);
     }
 
     /**
      * @dev Internal function to create a wallet.
      * @param owner_ The address of the wallet owner.
-     * @param chainId_ The chain ID.
      * @param salt_ The salt.
      * @return The address of the created wallet.
      */
     function _createWallet(
         address owner_,
-        uint256 chainId_,
         bytes32 salt_
     ) internal returns (address) {
         bytes[] memory callbacks = new bytes[](0);
-        return _createWallet(owner_, callbacks, chainId_, salt_);
+        return _createWallet(owner_, callbacks, salt_);
     }
 
     /**
      * @dev Internal function to create a wallet with callbacks.
      * @param owner_ The address of the wallet owner.
      * @param callbacks_ The callbacks.
-     * @param chainId The chain ID.
      * @param salt The salt.
      * @return The address of the created wallet.
      * This function uses the Create2Factory library to create a deterministic wallet address.
@@ -100,7 +95,6 @@ contract AyaraWalletManager is AyaraMessageHandler, Create2Factory {
     function _createWallet(
         address owner_,
         bytes[] memory callbacks_,
-        uint256 chainId,
         bytes32 salt
     ) internal returns (address) {
         // Validate if wallet already exists
@@ -109,7 +103,7 @@ contract AyaraWalletManager is AyaraMessageHandler, Create2Factory {
 
         // Generate bytecode
         bytes memory bytecode = type(AyaraWalletInstance).creationCode;
-        bytes memory encodedArgs = abi.encode(owner_, address(this), chainId);
+        bytes memory encodedArgs = abi.encode(owner_, address(this));
         bytes memory finalBytecode = abi.encodePacked(bytecode, encodedArgs);
 
         // Deploy contract
@@ -199,19 +193,17 @@ contract AyaraWalletManager is AyaraMessageHandler, Create2Factory {
     /**
      * @dev Internal function to calculate the address of a wallet.
      * @param owner_ The address of the wallet owner.
-     * @param chainId The chain ID.
      * @param salt The salt.
      * @return The address of the calculated wallet.
      * Precalculates the address of a wallet using the Create2Factory library.
      */
     function _calculateWalletAddress(
         address owner_,
-        uint256 chainId,
         bytes32 salt
     ) internal view returns (address) {
         // Generate bytecode
         bytes memory bytecode = type(AyaraWalletInstance).creationCode;
-        bytes memory encodedArgs = abi.encode(owner_, address(this), chainId);
+        bytes memory encodedArgs = abi.encode(owner_, address(this));
         bytes memory finalBytecode = abi.encodePacked(bytecode, encodedArgs);
 
         // Calculate address
