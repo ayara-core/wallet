@@ -43,7 +43,8 @@ contract AyaraSender {
     function _sendMessage(
         uint64 destinationChainSelector,
         address destinationAddress,
-        bytes memory data_
+        bytes memory data_,
+        uint256 ccipGasLimit
     ) internal returns (uint256 fee) {
         // We pay fees in LINK, hardcoded for now
         PayFeesIn payFeesIn = PayFeesIn.LINK;
@@ -51,7 +52,10 @@ contract AyaraSender {
             receiver: abi.encode(destinationAddress),
             data: data_,
             tokenAmounts: new Client.EVMTokenAmount[](0),
-            extraArgs: "",
+            extraArgs: Client._argsToBytes(
+                // Additional arguments, setting gas limit and non-strict sequencing mode
+                Client.EVMExtraArgsV1({gasLimit: ccipGasLimit, strict: false})
+            ),
             feeToken: payFeesIn == PayFeesIn.LINK ? link : address(0)
         });
 

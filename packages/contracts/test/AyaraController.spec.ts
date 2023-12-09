@@ -338,6 +338,7 @@ describe("AyaraController", function () {
         tokenDestination: await erc20Mock.getAddress(),
         maxFee: ethers.parseEther("1"),
         relayerFee: 1,
+        ccipGasLimit: 0,
       };
 
       const transaction = {

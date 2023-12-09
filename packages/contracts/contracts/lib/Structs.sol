@@ -33,4 +33,5 @@ struct FeeData {
     address tokenDestination; // The token to be used for the fee
     uint256 maxFee; // The maximum fee, set by the user
     uint256 relayerFee; // The fee for the relayer, set by the relayer
+    uint256 ccipGasLimit; // The gas limit for the CCIP message
 }

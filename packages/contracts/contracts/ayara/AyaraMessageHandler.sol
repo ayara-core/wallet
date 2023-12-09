@@ -48,7 +48,8 @@ contract AyaraMessageHandler is AyaraSender, AyaraReceiver {
         address wallet,
         Transaction memory transaction_,
         address token_,
-        uint256 lockedAmount_
+        uint256 lockedAmount_,
+        uint256 ccipGasLimit
     ) internal returns (uint256) {
         // Prepare data
         bytes memory data = abi.encode(
@@ -73,6 +74,12 @@ contract AyaraMessageHandler is AyaraSender, AyaraReceiver {
         address destinationAddress = address(this);
 
         // Send message to destination chain, handled by AyaraReceiver
-        return _sendMessage(destinationChainSelector, destinationAddress, data);
+        return
+            _sendMessage(
+                destinationChainSelector,
+                destinationAddress,
+                data,
+                ccipGasLimit
+            );
     }
 }

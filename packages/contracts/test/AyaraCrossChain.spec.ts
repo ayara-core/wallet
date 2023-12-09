@@ -240,6 +240,7 @@ describe("AyaraController", function () {
         tokenDestination: tokenAddress, // Fee Token
         maxFee: ethers.parseEther("1"), // Fee Amount
         relayerFee: 0, // Relayer Fee
+        ccipGasLimit: 0, // CCIP Gas Limit
       };
 
       const transaction = {
@@ -411,6 +412,7 @@ describe("AyaraController", function () {
         tokenDestination: tokenAddress, // Fee Token
         maxFee: 1000, // Fee Amount
         relayerFee: 100, // Relayer Fee
+        ccipGasLimit: 0, // CCIP Gas Limit
       };
 
       const transaction = {
@@ -485,6 +487,7 @@ describe("AyaraController", function () {
         tokenDestination: tokenAddress, // Fee Token
         maxFee: 1000, // Fee Amount
         relayerFee: 100, // Relayer Fee
+        ccipGasLimit: 0, // CCIP Gas Limit
       };
 
       const transaction = {
@@ -552,6 +555,7 @@ describe("AyaraController", function () {
         tokenDestination: tokenAddress, // Fee Token
         maxFee: 1000, // Fee Amount
         relayerFee: 100, // Relayer Fee
+        ccipGasLimit: 0, // CCIP Gas Limit
       };
 
       const transaction = {
@@ -623,7 +627,8 @@ describe("AyaraController", function () {
         aliceAddress,
         tokenAddress,
         config.ayaraInstances.sepolia.chainId,
-        await ayaraController.getAddress()
+        await ayaraController.getAddress(),
+        0 // CCIP Gas Limit
       );
 
       await expect(tx)

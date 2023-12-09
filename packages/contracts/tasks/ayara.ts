@@ -205,6 +205,7 @@ task("send:erc20:fromwallet")
       tokenDestination: args.tokenaddress,
       maxFee: hre.ethers.parseEther("0"),
       relayerFee: hre.ethers.parseEther("0"),
+      ccipGasLimit: 200000, // CCIP gas limit, default value
     };
     const transaction = {
       destinationChainId: hre.network.config.chainId ?? 31337,
@@ -279,20 +280,65 @@ task("send:crosschain:erc20approve")
       hre.ethers.parseEther("1"),
     ]);
 
-    const signature = await generateSignature(
+    const signature = await generateSignatureForUninitializedWallet(
       hre,
       deployer,
-      walletInstance,
-      data
+      ayaraController,
+      data,
+      {},
+      { chainId: args.destinationid }
     );
 
     const linkTokenAddress = await ayaraController.link();
+
+    // We need to estimate the gas limit for the transaction
+    // 1. Create a second provider
+    const secondProvider = new hre.ethers.JsonRpcProvider(
+      "https://goerli.base.org"
+    );
+    const secondDeployer = new hre.ethers.Wallet(
+      process.env.PRIVATE_KEY ?? "",
+      secondProvider
+    );
+
+    // 2. Get tx data
+    const ayaraControllerBase = await hre.ethers.getContractAt(
+      "AyaraController",
+      ayaraControllerAddress,
+      secondDeployer
+    );
+
+    // 3. Estimate the tx
+    const gasLimit = await ayaraControllerBase.executeUserOperation.estimateGas(
+      await deployer.getAddress(),
+      walletAddress,
+      {
+        tokenSource: linkTokenAddress,
+        tokenDestination: "0x6D0F8D488B669aa9BA2D0f0b7B75a88bf5051CD3",
+        maxFee: hre.ethers.parseEther("1"),
+        relayerFee: hre.ethers.parseEther("0"),
+        ccipGasLimit: 200000, // CCIP gas limit, default value
+      },
+      {
+        destinationChainId: args.destinationid,
+        to: args.destinationaddress,
+        value: 0,
+        data: data,
+        signature: signature,
+      }
+    );
+
+    log(`Estimated gas limit: ${gasLimit}`);
+
+    const gasLimitWithBuffer = gasLimit + 100000n;
 
     const feeData = {
       tokenSource: linkTokenAddress,
       tokenDestination: "0x6D0F8D488B669aa9BA2D0f0b7B75a88bf5051CD3",
       maxFee: hre.ethers.parseEther("1"),
       relayerFee: hre.ethers.parseEther("0"),
+      ccipGasLimit: gasLimitWithBuffer, // CCIP gas limit, default value
+      // Change this to a proper value once the estimateGas is implemented
     };
 
     const transaction = {
@@ -304,13 +350,7 @@ task("send:crosschain:erc20approve")
     };
 
     log(`Approving ${args.destinationaddress} on ${args.destinationid}`);
-    const transactionData = ayaraController.interface.encodeFunctionData(
-      "executeUserOperation",
-      [await deployer.getAddress(), walletAddress, feeData, transaction]
-    );
 
-    log(`Transaction data: `);
-    log(transactionData);
     const tx = await ayaraController.executeUserOperation(
       await deployer.getAddress(),
       walletAddress,

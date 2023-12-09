@@ -727,6 +727,10 @@
           {
             "type": "uint256",
             "name": "relayerFee"
+          },
+          {
+            "type": "uint256",
+            "name": "ccipGasLimit"
           }
         ]
       },
@@ -933,6 +937,10 @@
       {
         "type": "address",
         "name": "ayaraController_"
+      },
+      {
+        "type": "uint256",
+        "name": "ccipGasLimit_"
       }
     ],
     "outputs": []

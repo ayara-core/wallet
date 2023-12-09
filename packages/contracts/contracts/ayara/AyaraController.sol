@@ -112,7 +112,8 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
         address owner_,
         address token_,
         uint64 destinationChainId_,
-        address ayaraController_
+        address ayaraController_,
+        uint256 ccipGasLimit_
     ) external {
         // Settle gas, updates the amounts and returns the amount that can be unlocked on the other chain
         uint256 amount = _settleGas(owner_, token_);
@@ -126,7 +127,14 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
         });
 
         // Send CCIP message to other chain
-        _routeMessage(owner_, wallets[owner_], transaction, token_, amount);
+        _routeMessage(
+            owner_,
+            wallets[owner_],
+            transaction,
+            token_,
+            amount,
+            ccipGasLimit_
+        );
     }
 
     /**
@@ -180,7 +188,8 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
                 wallet_,
                 transaction_,
                 feeData_.tokenDestination,
-                lockedAmount
+                lockedAmount,
+                feeData_.ccipGasLimit
             );
 
             feeData_.relayerFee = feeData_.relayerFee + crossChainFee;

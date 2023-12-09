@@ -168,7 +168,8 @@ contract AyaraWalletManager is AyaraMessageHandler, Create2Factory {
         address wallet_,
         Transaction memory transaction_,
         address token_,
-        uint256 lockedAmount_
+        uint256 lockedAmount_,
+        uint256 ccipGasLimit_
     ) internal returns (uint256 fee) {
         // Send exection via AyaraMessenger to the other chain
         fee = _routeMessage(
@@ -176,7 +177,8 @@ contract AyaraWalletManager is AyaraMessageHandler, Create2Factory {
             wallet_,
             transaction_,
             token_,
-            lockedAmount_
+            lockedAmount_,
+            ccipGasLimit_
         );
 
         // Emit event

@@ -296,6 +296,7 @@ describe("AyaraController Fork tests", function () {
         tokenDestination: linkTokenAddress,
         maxFee: ethers.parseEther("0.01"),
         relayerFee: ethers.parseEther("0.01"),
+        ccipGasLimit: 0,
       };
 
       const transaction = {
@@ -360,6 +361,7 @@ describe("AyaraController Fork tests", function () {
         tokenDestination: linkTokenAddress,
         maxFee: ethers.parseEther("1"),
         relayerFee: ethers.parseEther("0.01"),
+        ccipGasLimit: 0,
       };
 
       const transaction = {
