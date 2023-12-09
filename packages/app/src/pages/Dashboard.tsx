@@ -1,99 +1,220 @@
-import { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useRef } from "react"
+import { useNavigate } from "react-router-dom"
 
-import RPC from "../web3RPC"; // for using web3.js
-import ChainConfigs from "../chainConfig.json";
+import RPC from "../web3RPC" // for using web3.js
+import ChainConfigs from "../chainConfig.json"
 
-import { createWallet, getWallet } from '../utils/walletInstance';
+import { createWallet, getWallet } from "../utils/walletInstance"
+import { ethers } from "ethers"
+import Web3 from "web3"
 
 const Dashboard: React.FC<{
-  web3auth: any;
-  provider: any;
-  setProvider: any;
-  updateChain: any;
+  web3auth: any
+  provider: any
+  setProvider: any
+  updateChain: any
 }> = ({ web3auth, provider, setProvider, updateChain }) => {
-  const navigate = useNavigate();
-  const transferModalRef = useRef<HTMLDialogElement>(null);
-  const [, setShowModal] = useState(false);
+  const navigate = useNavigate()
+  const transferModalRef = useRef<HTMLDialogElement>(null)
+  const [, setShowModal] = useState(false)
 
   // Check if already onboarded
   useEffect(() => {
-    const hasOnboarded = localStorage.getItem("hasOnboarded");
-    // if (!hasOnboarded) {
-    if (true) {
-      navigate("/onboard/1");
+    const hasOnboarded = localStorage.getItem("hasOnboarded")
+    if (!hasOnboarded) {
+      navigate("/onboard/1")
     }
-  }, []);
+  }, [])
 
   const displayAddress = (str: string): string => {
     if (str.length <= 10) {
-      return str;
+      return str
     }
-    const firstFive = str.slice(0, 5);
-    const lastFive = str.slice(-5);
-    return `${firstFive}...${lastFive}`;
-  };
+    const firstFive = str.slice(0, 5)
+    const lastFive = str.slice(-5)
+    return `${firstFive}...${lastFive}`
+  }
 
   const logout = async () => {
     if (!web3auth) {
-      return;
+      return
     }
-    await web3auth.logout();
-    setProvider(null);
-  };
+    await web3auth.logout()
+    setProvider(null)
+  }
 
   const getAccountAddress = async () => {
     if (!provider) {
-      return;
+      return
     }
-    const rpc = new RPC(provider);
-    const address = await rpc.getAccounts();
-    navigator.clipboard.writeText(address);
-  };
+    const rpc = new RPC(provider)
+    const address = await rpc.getAccounts()
+    navigator.clipboard.writeText(address)
+  }
 
   const sendTransactionWithABI = async () => {
     if (!provider) {
-      alert("provider not initialized yet");
-      return;
+      alert("provider not initialized yet")
+      return
     }
-    const rpc = new RPC(provider);
+    const web3 = new Web3(provider)
+    const rpc = new RPC(provider)
+
+    // TODO: Get ayara contract from ayara controller
+    const ownerAddress = "0x00"
+    const ayaraWalletChainId = 1
+    const ayaraWalletAddress = "0x00"
+    const ayaraControllerAddress = "0x00"
+    const walletNonce = 0
+    const mockERC20Address = "0x0"
+    const CHAIN_ID = 11155111
+    const receiverAddress = "0x00"
+    const amount = 0
+
     try {
+      // Prepare tx, send ERC20 to Bob
+      const data = web3.eth.abi.encodeFunctionCall(
+        {
+          name: "myMethod",
+          type: "function",
+          inputs: [
+            {
+              type: "address",
+              name: "myAddress",
+            },
+            {
+              type: "uint256",
+              name: "myUint",
+            },
+          ],
+        },
+        [receiverAddress, amount]
+      )
+
+      const signature = await rpc.signTypedData(
+        ownerAddress,
+        ayaraWalletChainId,
+        ayaraWalletAddress,
+        ayaraControllerAddress,
+        walletNonce,
+        data
+      )
+
+      const feeData = {
+        token: mockERC20Address,
+        maxFee: ethers.parseEther("1"),
+        relayerFee: 1,
+      }
+
+      const transaction = {
+        destinationChainId: CHAIN_ID,
+        to: mockERC20Address,
+        value: 0,
+        data: data,
+        signature: signature,
+      }
+
       const receipt = await rpc.sendTransactionWithABI(
         [
           {
-            type: "function",
-            name: "increment",
-            stateMutability: "nonpayable",
-            inputs: [],
+            inputs: [
+              {
+                internalType: "address",
+                name: "owner_",
+                type: "address",
+              },
+              {
+                internalType: "address",
+                name: "wallet_",
+                type: "address",
+              },
+              {
+                components: [
+                  {
+                    internalType: "address",
+                    name: "token",
+                    type: "address",
+                  },
+                  {
+                    internalType: "uint256",
+                    name: "maxFee",
+                    type: "uint256",
+                  },
+                  {
+                    internalType: "uint256",
+                    name: "relayerFee",
+                    type: "uint256",
+                  },
+                ],
+                internalType: "struct FeeData",
+                name: "feeData_",
+                type: "tuple",
+              },
+              {
+                components: [
+                  {
+                    internalType: "uint64",
+                    name: "destinationChainId",
+                    type: "uint64",
+                  },
+                  {
+                    internalType: "address",
+                    name: "to",
+                    type: "address",
+                  },
+                  {
+                    internalType: "uint256",
+                    name: "value",
+                    type: "uint256",
+                  },
+                  {
+                    internalType: "bytes",
+                    name: "data",
+                    type: "bytes",
+                  },
+                  {
+                    internalType: "bytes",
+                    name: "signature",
+                    type: "bytes",
+                  },
+                ],
+                internalType: "struct Transaction",
+                name: "transaction_",
+                type: "tuple",
+              },
+            ],
+            name: "executeUserOperation",
             outputs: [],
+            stateMutability: "payable",
+            type: "function",
           },
         ],
-        "0xbB39Cb0a1B8B95cbB1Ae7681507e420CF7307396",
-        "increment()",
-        [],
+        ayaraControllerAddress,
+        "executeUserOperation()",
+        [ownerAddress, ayaraWalletAddress, feeData, transaction],
         "0"
-      );
-      alert(receipt);
+      )
+      alert(receipt)
     } catch (error) {
-      alert(error);
+      alert(error)
     }
-  };
+  }
 
   const [selectedNetwork, setSelectedNetwork] = useState(() => {
-    const chainId = provider.defaultConfig.chainConfig.chainId;
+    const chainId = provider.defaultConfig.chainConfig.chainId
     const selectedChain = ChainConfigs.find(
       (config: any) => config.chainId === chainId
-    );
-    return selectedChain?.displayName;
-  });
+    )
+    return selectedChain?.displayName
+  })
 
   const openTransferModal = () => {
-    setShowModal(true);
-    transferModalRef.current?.showModal();
+    setShowModal(true)
+    transferModalRef.current?.showModal()
   }
 
   const closeTransferModal = () => {
-    setShowModal(false);
+    setShowModal(false)
   }
 
   return (
@@ -103,23 +224,56 @@ const Dashboard: React.FC<{
         <div className="modal-box">
           <h3 className="font-bold text-lg">Transfer Tokens</h3>
           <div className="py-4">
-            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Token Name</label>
-            <input type="text" placeholder="e.g., LINK" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required />
+            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+              Token Name
+            </label>
+            <input
+              type="text"
+              placeholder="e.g., LINK"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+              required
+            />
           </div>
           <div className="py-4">
-            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Amount</label>
-            <input type="number" placeholder="e.g., 100" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required />
+            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+              Amount
+            </label>
+            <input
+              type="number"
+              placeholder="e.g., 100"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+              required
+            />
           </div>
           <div className="py-4">
-            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Chain</label>
-            <input type="text" placeholder="e.g., Ethereum" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required />
+            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+              Chain
+            </label>
+            <input
+              type="text"
+              placeholder="e.g., Ethereum"
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+              required
+            />
           </div>
           <div className="py-4">
-            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Target Address</label>
-            <input type="text" placeholder="e.g., 0x..." className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required />
+            <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+              Target Address
+            </label>
+            <input
+              type="text"
+              placeholder="e.g., 0x..."
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+              required
+            />
           </div>
           <div className="py-4">
-            <button className="btn btn-primary" onClick={sendTransactionWithABI}>Send</button>
+            <button
+              className="btn btn-primary"
+              onClick={sendTransactionWithABI}
+            >
+              Send
+            </button>
           </div>
         </div>
         <form method="dialog" className="modal-backdrop">
@@ -132,14 +286,14 @@ const Dashboard: React.FC<{
           className="select select-bordered select-xs rounded-full"
           value={selectedNetwork}
           onChange={(e) => {
-            setSelectedNetwork(e.target.value);
+            setSelectedNetwork(e.target.value)
             const selectedChain = ChainConfigs.find(
               (config: any) => config.displayName === e.target.value
-            );
+            )
             if (selectedChain) {
-              updateChain({ chainId: selectedChain?.chainId });
+              updateChain({ chainId: selectedChain?.chainId })
             } else {
-              updateChain({ chainId: "0x7A69" });
+              updateChain({ chainId: "0x7A69" })
             }
           }}
         >
@@ -259,7 +413,7 @@ const Dashboard: React.FC<{
         </button>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default Dashboard;
+export default Dashboard

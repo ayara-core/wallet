@@ -1,25 +1,25 @@
-import { useEffect, useState } from "react";
-import { Web3AuthNoModal } from "@web3auth/no-modal";
-import { CHAIN_NAMESPACES, IProvider } from "@web3auth/base";
-import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
-import { OpenloginAdapter } from "@web3auth/openlogin-adapter";
+import { useEffect, useState } from "react"
+import { Web3AuthNoModal } from "@web3auth/no-modal"
+import { CHAIN_NAMESPACES, IProvider } from "@web3auth/base"
+import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider"
+import { OpenloginAdapter } from "@web3auth/openlogin-adapter"
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Onboarding1 from "./pages/Onboarding1";
-import Onboarding2 from "./pages/Onboarding2";
-import Dashboard from "./pages/Dashboard";
-import Onboarding3 from "./pages/Onboarding3";
-import Onboarding4 from "./pages/Onboarding4";
-import Login from "./pages/Login";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import Onboarding1 from "./pages/Onboarding1"
+import Onboarding2 from "./pages/Onboarding2"
+import Dashboard from "./pages/Dashboard"
+import Onboarding3 from "./pages/Onboarding3"
+import Onboarding4 from "./pages/Onboarding4"
+import Login from "./pages/Login"
 
-import ChainConfigs from "./chainConfig.json";
+import ChainConfigs from "./chainConfig.json"
 
 const clientId =
-  "BFroo1J0Yx9-vnNmi1hlf7EiwgBWZx-YdCU0F1yBxzDmKpaQ7t-x34CioYb1oc-3lHM3LeH3mQTu-g0qYSacAHE";
+  "BFroo1J0Yx9-vnNmi1hlf7EiwgBWZx-YdCU0F1yBxzDmKpaQ7t-x34CioYb1oc-3lHM3LeH3mQTu-g0qYSacAHE"
 
 function App() {
-  const [web3auth, setWeb3auth] = useState<Web3AuthNoModal | null>(null);
-  const [provider, setProvider] = useState<IProvider | null>(null);
+  const [web3auth, setWeb3auth] = useState<Web3AuthNoModal | null>(null)
+  const [provider, setProvider] = useState<IProvider | null>(null)
 
   useEffect(() => {
     const init = async () => {
@@ -32,41 +32,41 @@ function App() {
           blockExplorer: "https://optimistic.etherscan.io",
           ticker: "ETH",
           tickerName: "Ethereum",
-        };
+        }
         const web3auth = new Web3AuthNoModal({
           clientId,
           chainConfig,
           web3AuthNetwork: "sapphire_devnet",
-        });
+        })
 
-        setWeb3auth(web3auth);
+        setWeb3auth(web3auth)
 
         const privateKeyProvider = new EthereumPrivateKeyProvider({
           config: { chainConfig },
-        });
+        })
 
         const openloginAdapter = new OpenloginAdapter({
           privateKeyProvider,
-        });
-        web3auth.configureAdapter(openloginAdapter);
-        setWeb3auth(web3auth);
+        })
+        web3auth.configureAdapter(openloginAdapter)
+        setWeb3auth(web3auth)
 
-        await web3auth.init();
-        setProvider(web3auth.provider);
+        await web3auth.init()
+        setProvider(web3auth.provider)
       } catch (error) {
-        console.error(error);
+        console.error(error)
       }
-    };
+    }
 
-    init();
-  }, []);
+    init()
+  }, [])
 
   const updateChain = async ({ chainId }: { chainId: string }) => {
     try {
-      console.log(chainId, ChainConfigs);
+      console.log(chainId, ChainConfigs)
       const selectedChain = ChainConfigs.find(
         (config: any) => config.chainId === chainId
-      );
+      )
       const chainConfig = {
         chainNamespace: CHAIN_NAMESPACES.EIP155,
         chainId: "0xaa36a7",
@@ -76,32 +76,32 @@ function App() {
         ticker: "ETH",
         tickerName: "Ethereum",
         ...selectedChain,
-      };
+      }
 
       const web3auth = new Web3AuthNoModal({
         clientId,
         chainConfig,
         web3AuthNetwork: "sapphire_devnet",
-      });
+      })
 
-      setWeb3auth(web3auth);
+      setWeb3auth(web3auth)
 
       const privateKeyProvider = new EthereumPrivateKeyProvider({
         config: { chainConfig },
-      });
+      })
 
       const openloginAdapter = new OpenloginAdapter({
         privateKeyProvider,
-      });
-      web3auth.configureAdapter(openloginAdapter);
-      setWeb3auth(web3auth);
+      })
+      web3auth.configureAdapter(openloginAdapter)
+      setWeb3auth(web3auth)
 
-      await web3auth.init();
-      setProvider(web3auth.provider);
+      await web3auth.init()
+      setProvider(web3auth.provider)
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-  };
+  }
 
   return (
     <Router>
@@ -134,7 +134,7 @@ function App() {
         <Route path="/onboard/4" element={<Onboarding4 />} />
       </Routes>
     </Router>
-  );
+  )
 }
 
-export default App;
+export default App

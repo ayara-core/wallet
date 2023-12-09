@@ -28,9 +28,9 @@ export const createWallet = async (rpc: any, ownerAddress: string) => {
     "createWallet(address,bytes[])",
     [ownerAddress, []],
     "0"
-  );
-  return receipt;
-};
+  )
+  return receipt
+}
 
 export const getWallet = async (rpc: any, ownerAddress: string) => {
   const walletAddress = await rpc.readSmartContractWithABI(
@@ -58,6 +58,6 @@ export const getWallet = async (rpc: any, ownerAddress: string) => {
     "0x47356fbDC7971b19ae3B0422c5e5A2042909FbB1",
     "wallets(address)",
     [ownerAddress]
-  );
-  return walletAddress;
-};
+  )
+  return walletAddress
+}

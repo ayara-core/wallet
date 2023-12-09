@@ -1,2 +1,2 @@
-import "./deploy";
-import "./wallet";
+import "./deploy"
+import "./wallet"
