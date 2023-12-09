@@ -42,6 +42,8 @@ contract AyaraMessageHandler is AyaraSender, AyaraReceiver {
      * @param transaction_ The transaction to be routed.
      * @param token_ The address of the token.
      * @param lockedAmount_ The amount of tokens to be locked.
+     * @param ccipGasLimit The gas limit for the CCIP message to be sent.
+     * @return The messageId of the sent message.
      */
     function _routeMessage(
         address owner_,

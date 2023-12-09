@@ -42,10 +42,6 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
         AyaraGasBank(gasTokens_, initialOwner_)
     {
         salt = salt_;
-
-        // Get the chain ID
-        // if (useBlockChainId) chainId = block.chainid;
-        // else chainId = chainId_;
         chainId = chainId_;
     }
 
@@ -82,6 +78,7 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
      * @param owner_ The address of the owner.
      * @param token_ The address of the token to add.
      * @param amount_ The amount of the token to add.
+     * This function will create a wallet if it does not exist, and add funds to the wallet.
      */
     function addFundsToWallet(
         address owner_,
@@ -91,7 +88,7 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
         // Create wallet if not exists
         _createWalletIfNotExists(owner_, salt);
 
-        // Add funds to wallet
+        // Add funds to wallet, uses tranferFrom and updates gasData
         _transferAndFundWallet(owner_, token_, amount_);
     }
 
@@ -103,6 +100,7 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
      * @param token_ The address of the token to settle.
      * @param destinationChainId_ The ID of the destination chain.
      * @param ayaraController_ The address of the AyaraController.
+     * @param ccipGasLimit_ The gas limit for the CCIP message.
      * This function settles the gas, updates the amounts, and returns the amount that can be unlocked on the other chain.
      * It then encodes a message with the owner, wallet, token, and locked amount.
      * A transaction is created with the destination chain ID, AyaraController address, and the encoded message.
@@ -118,6 +116,7 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
         // Settle gas, updates the amounts and returns the amount that can be unlocked on the other chain
         uint256 amount = _settleGas(owner_, token_);
 
+        // Create the Transaction object
         Transaction memory transaction = Transaction({
             destinationChainId: destinationChainId_,
             to: ayaraController_,
@@ -144,7 +143,6 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
      * @param amount_ The amount to be settled.
      * This function finalizes the gas settlement, updates the amounts and returns the amount that can be unlocked on the other chain.
      */
-    // TODO: Untested function
     function finalizeSettlement(
         address owner_,
         address token_,
@@ -173,9 +171,10 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
     ) external payable {
         // Create wallet if not exists
         address wallet = _createWalletIfNotExists(owner_, salt);
+        // Check that the wallet is correct
         if (wallet != wallet_) revert InvalidWallet(wallet, wallet_);
 
-        // Execute user operation
+        // Execute user operation, either on this chain or another chain
         if (transaction_.destinationChainId == chainId) {
             // execute on this chain
             _executeUserOperationThisChain(owner_, wallet_, transaction_);
@@ -192,6 +191,7 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
                 feeData_.ccipGasLimit
             );
 
+            // Update fee data to include cross chain fee from CCIP
             feeData_.relayerFee = feeData_.relayerFee + crossChainFee;
         }
         // Charge fee if required
@@ -214,6 +214,7 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
 
         // If the message is directed to this contract, then we just finalize the settlement
         if (message.to == address(this)) {
+            // Finalize the settlement, unlocking the amount on this chain
             _finalizeSettlement(
                 message.owner,
                 message.token,
@@ -232,10 +233,10 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
         if (wallet == address(0))
             wallet = _createWalletIfNotExists(message.owner, salt);
 
-        // Set allowance for the message owner if required
+        // Set allowance for the message owner if required, this assumes that the owner has locked the amount on the other chain
         _setAllowance(message.owner, message.token, message.lockedAmount);
 
-        // Create a transaction from the message data
+        // Create a transaction from the message data for execution on this chain
         Transaction memory transaction = Transaction({
             destinationChainId: 0,
             to: message.to,

@@ -3,8 +3,6 @@ pragma solidity ^0.8.23;
 
 import "../lib/SignatureValidator.sol";
 
-import "hardhat/console.sol";
-
 /**
  * @title AyaraWalletInstance
  * @dev This contract is a wallet instance that supports execution of arbitrary calls.
@@ -28,12 +26,16 @@ contract AyaraWalletInstance {
      * @dev Initializes the contract setting the owner and controller addresses.
      * @param ownerAddress_ The address of the owner.
      * @param controllerAddress_ The address of the controller.
-
      */
     constructor(address ownerAddress_, address controllerAddress_) {
+        // The owner EOA of the wallet
         ownerAddress = ownerAddress_;
+        // The address of the AyaraController contract
         controllerAddress = controllerAddress_;
+        // The chainId of the blockchain network where the contract is deployed
+        // Important we use the chainId from the block, since this will allow to have the same deploy code for all networks
         chainId = block.chainid;
+        // The nonce is initialized to 0
         nonce = 0;
     }
 
@@ -88,6 +90,7 @@ contract AyaraWalletInstance {
             revert InsufficientBalance(uint256(address(this).balance), value);
         }
 
+        // Execute the call
         return _execute(to, value, data);
     }
 
@@ -104,13 +107,18 @@ contract AyaraWalletInstance {
         uint256 value,
         bytes calldata data
     ) private returns (bool success, bytes memory result) {
+        // Execute the call, use low-level call to avoid reverting on failure
         (success, result) = to.call{value: value}(data);
+
+        // Check that the call was successful
         if (!success) {
             revert ExecutionFailed(data);
         }
 
+        // Increment the nonce
         nonce++;
 
+        // Return the result
         return (success, result);
     }
 }

@@ -36,7 +36,9 @@ contract AyaraSender {
     /**
      * @dev Internal function to send a message.
      * @param destinationChainSelector The selector of the destination chain.
+     * @param destinationAddress The address of the destination contract.
      * @param data_ The data to be sent.
+     * @param ccipGasLimit The gas limit for the message.
      * Sends a message to the destination chain.
      * This function is called by the parent contract.
      */
@@ -46,8 +48,10 @@ contract AyaraSender {
         bytes memory data_,
         uint256 ccipGasLimit
     ) internal returns (uint256 fee) {
-        // We pay fees in LINK, hardcoded for now
+        // We pay fees in LINK
         PayFeesIn payFeesIn = PayFeesIn.LINK;
+
+        // Prepare the message
         Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
             receiver: abi.encode(destinationAddress),
             data: data_,
@@ -60,18 +64,21 @@ contract AyaraSender {
         });
 
         fee = IRouterClient(router).getFee(destinationChainSelector, message);
-        // Approve the router to spend the fee
-        IERC20(link).approve(router, fee);
 
         bytes32 messageId;
 
         if (payFeesIn == PayFeesIn.LINK) {
-            // LinkTokenInterface(i_link).approve(i_router, fee);
+            // Approve the router to spend the fee
+            IERC20(link).approve(router, fee);
+
+            // Send the message
             messageId = IRouterClient(router).ccipSend(
                 destinationChainSelector,
                 message
             );
         } else {
+            // Send the message, paying the fee in native tokens
+            // Currently, not implemented
             messageId = IRouterClient(router).ccipSend{value: fee}(
                 destinationChainSelector,
                 message
@@ -81,10 +88,17 @@ contract AyaraSender {
         emit MessageSent(messageId);
     }
 
+    /**
+     * @notice Returns the router fee for a given destination chain and message.
+     * @param destinationChainSelector The selector of the destination chain.
+     * @param message The EVM2AnyMessage to be sent.
+     * @return The fee for the router.
+     */
     function getRouterFee(
         uint64 destinationChainSelector,
         Client.EVM2AnyMessage memory message
     ) public view returns (uint256) {
+        // Returns an estimation of the fee based on what the router would charge with a given message
         return IRouterClient(router).getFee(destinationChainSelector, message);
     }
 }

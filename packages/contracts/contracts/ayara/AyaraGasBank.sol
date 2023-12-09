@@ -126,8 +126,6 @@ contract AyaraGasBank is Ownable {
      * This will set the totalAmount, lockedAmount, and usedAmount of gas for the user and token to 0.
      * This will emit a WalletGasSettled event with the owner, token, and available amount.
      */
-
-    // TODO: Untested function
     function _settleGas(
         address owner_,
         address token_
@@ -176,7 +174,6 @@ contract AyaraGasBank is Ownable {
      * (lockedAmount is the amount of gas locked by the user, to be used on another chain)
      * (usedAmount is the amount of gas already used by the user)
      */
-
     function _getAvailableGas(
         address owner_,
         address token_
@@ -228,14 +225,14 @@ contract AyaraGasBank is Ownable {
 
         // Check if is ETH or ERC20
         if (token_ == address(0)) {
-            // ETH already transferred, just fund wallet
+            // ETH is currently not supported, but can be added in the future
             revert NativeTokenNotSupported();
         } else {
             // Transfer tokens
             IERC20(token_).safeTransferFrom(owner_, address(this), amount_);
         }
 
-        // Update gas data
+        // Update gas data, increase total amount
         userGasData[owner_].gasReserves[token_].totalAmount += amount_;
 
         // Emit event
@@ -292,7 +289,7 @@ contract AyaraGasBank is Ownable {
                 gasData.totalAmount
             );
 
-        // Update gas data
+        // Update gas data, increase used amount by the amount that the relayer charges
         userGasData[owner_]
             .gasReserves[feeData_.tokenSource]
             .usedAmount += feeData_.relayerFee;
@@ -313,7 +310,7 @@ contract AyaraGasBank is Ownable {
      * @return toLock The amount of gas to lock.
      * This function will revert if the token is not approved.
      * This will increase the lockedAmount of gas for the user and token. And return the amount to lock.
-     * This locked amount will then be send to the other chain as allowance.
+     * This locked amount will then return the allowance that can be used on another chain.
      * The amount to lock is calculated as a third of the available amount.
      */
     function _lockGas(
@@ -353,8 +350,8 @@ contract AyaraGasBank is Ownable {
         // Check if token is approved
         if (!isGasToken[token_]) revert NotApprovedGasToken(token_);
 
-        // Set allowance
-        userGasData[owner_].gasReserves[token_].totalAmount = amount_;
+        // Set allowance, we increase the total amount by the amount that the user locked on the other chain
+        userGasData[owner_].gasReserves[token_].totalAmount += amount_;
 
         // Emit event
         emit WalletGasFunded(owner_, token_, amount_);

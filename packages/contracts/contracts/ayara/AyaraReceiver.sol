@@ -54,12 +54,15 @@ contract AyaraReceiver is CCIPReceiver {
     function _handleReceive(
         Client.Any2EVMMessage memory message
     ) internal virtual returns (Message memory decodedMessage) {
+        // Decode message, this will return a Message struct
         decodedMessage = abi.decode(message.data, (Message));
 
+        // Store the latest message details
         latestMessageId = message.messageId;
         latestSourceChainSelector = message.sourceChainSelector;
         latestSender = abi.decode(message.sender, (address));
 
+        // Emit the MessageReceived event
         emit MessageReceived(
             latestMessageId,
             latestSourceChainSelector,

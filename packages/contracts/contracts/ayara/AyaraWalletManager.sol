@@ -80,7 +80,10 @@ contract AyaraWalletManager is AyaraMessageHandler, Create2Factory {
         address owner_,
         bytes32 salt_
     ) internal returns (address) {
+        // Create empty callbacks array
         bytes[] memory callbacks = new bytes[](0);
+
+        // Create wallet
         return _createWallet(owner_, callbacks, salt_);
     }
 
@@ -131,7 +134,8 @@ contract AyaraWalletManager is AyaraMessageHandler, Create2Factory {
         address wallet_,
         Transaction memory transaction_
     ) internal returns (bool success) {
-        // Perform operation
+        // Perform operation, call execute function of AyaraWalletInstance
+        // This will validate the signature and execute the operation
         (success, ) = AyaraWalletInstance(payable(wallet_)).execute(
             transaction_.to,
             transaction_.value,
@@ -160,6 +164,7 @@ contract AyaraWalletManager is AyaraMessageHandler, Create2Factory {
      * @param transaction_ The transaction to be executed.
      * @param token_ The token to be used.
      * @param lockedAmount_ The amount to be locked.
+     * @param ccipGasLimit_ The gas limit for the CCIP message to be sent.
      * Calls the _routeMessage function of the AyaraMessageHandler contract.
      * Emits an OperationExecutionSent event.
      */
@@ -171,7 +176,7 @@ contract AyaraWalletManager is AyaraMessageHandler, Create2Factory {
         uint256 lockedAmount_,
         uint256 ccipGasLimit_
     ) internal returns (uint256 fee) {
-        // Send exection via AyaraMessenger to the other chain
+        // Send exection via AyaraMessenger to the other chain and get fee
         fee = _routeMessage(
             owner_,
             wallet_,
