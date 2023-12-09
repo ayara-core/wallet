@@ -46,6 +46,110 @@ describe("AyaraController Fork tests", function () {
     }
     return { alice, bob, deployer, relayer, ayaraController, erc20Mock, hre };
   };
+  describe("AyaraController, Test deployment on different chains and check address", function () {
+    let ayaraControllerAddressOptimism: AddressLike;
+    let walletAddressOptimism: AddressLike;
+    let ayaraControllerAddressBase: AddressLike;
+    let walletAddressBase: AddressLike;
+
+    const setupTestDeploy = async () => {
+      const { deployer } = await getCommonSigners(hre);
+      const config = getSystemConfig(hre);
+      const deployConfig = getDeployConfig();
+      return { deployer, config, deployConfig };
+    };
+
+    it("Should deploy AyaraController on chainId 420", async function () {
+      // Get signers, using fixture
+      const { deployer, config, deployConfig } =
+        await loadFixture(setupTestDeploy);
+      const nonce = await deployer.getNonce();
+      log(`Nonce: ${nonce}`);
+
+      // Deploy AyaraController
+      const ayaraControllerFactory =
+        await ethers.getContractFactory("AyaraController");
+      const chainId = config.ayaraInstances.optimism.chainId;
+      const ayaraController = await ayaraControllerFactory.deploy(
+        await deployer.getAddress(),
+        config.ayaraConfig.salt,
+        chainId,
+        [deployConfig.linkTokenAddress[chainId]],
+        deployConfig.routerAddress[chainId],
+        deployConfig.linkTokenAddress[chainId]
+      );
+
+      // Check if AyaraController is deployed
+      expect(await ayaraController.getAddress()).to.be.properAddress;
+      ayaraControllerAddressOptimism = await ayaraController.getAddress();
+      log(`AyaraController: ${ayaraControllerAddressOptimism}`);
+
+      // Precalculate the wallet address
+      const walletAddress = await ayaraController.calculateWalletAddress(
+        await deployer.getAddress()
+      );
+      log(`Wallet address should be: ${walletAddress}`);
+
+      // Create a wallet for the deployer and check the address
+      const tx = await ayaraController.createWallet(
+        await deployer.getAddress(),
+        []
+      );
+      const receipt = await tx.wait();
+      walletAddressOptimism = await ayaraController.wallets(
+        await deployer.getAddress()
+      );
+      log(`Wallet: ${walletAddressOptimism}`);
+    });
+    it("Should deploy AyaraController on chainId 84531", async function () {
+      // Get signers
+      const { deployer, config, deployConfig } =
+        await loadFixture(setupTestDeploy);
+      const nonce = await deployer.getNonce();
+      log(`Nonce: ${nonce}`);
+
+      // Deploy AyaraController
+      const ayaraControllerFactory =
+        await ethers.getContractFactory("AyaraController");
+      const chainId = config.ayaraInstances.base.chainId;
+      const ayaraController = await ayaraControllerFactory.deploy(
+        await deployer.getAddress(),
+        config.ayaraConfig.salt,
+        chainId,
+        [deployConfig.linkTokenAddress[chainId]],
+        deployConfig.routerAddress[chainId],
+        deployConfig.linkTokenAddress[chainId]
+      );
+
+      // Check if AyaraController is deployed
+      expect(await ayaraController.getAddress()).to.be.properAddress;
+      ayaraControllerAddressBase = await ayaraController.getAddress();
+      log(`AyaraController: ${ayaraControllerAddressBase}`);
+
+      // Precalculate the wallet address
+      const walletAddress = await ayaraController.calculateWalletAddress(
+        await deployer.getAddress()
+      );
+      log(`Wallet address should be: ${walletAddress}`);
+
+      // Create a wallet for the deployer and check the address
+      const tx = await ayaraController.createWallet(
+        await deployer.getAddress(),
+        []
+      );
+      const receipt = await tx.wait();
+      walletAddressBase = await ayaraController.wallets(
+        await deployer.getAddress()
+      );
+      log(`Wallet: ${walletAddressBase}`);
+    });
+    it("Should be the same address on both chains", async function () {
+      expect(ayaraControllerAddressOptimism).to.equal(
+        ayaraControllerAddressBase
+      );
+      expect(walletAddressOptimism).to.equal(walletAddressBase);
+    });
+  });
   describe("AyaraController, Initial Setup and Send Crosschain Message", function () {
     const deployConfig = getDeployConfig();
     const linkWhale = "0x4281eCF07378Ee595C564a59048801330f3084eE";
@@ -85,13 +189,6 @@ describe("AyaraController Fork tests", function () {
         this as any as TestContext;
 
       const ayaraControllerInstance = ayaraController.connect(deployer);
-
-      // Check if link token is whitelisted
-      const tx = await ayaraControllerInstance.modifyGasTokens(
-        [linkTokenAddress],
-        true
-      );
-      const receipt = await tx.wait();
 
       // Check if it is whitelisted
       expect(await ayaraControllerInstance.isGasToken(linkTokenAddress)).to.be
@@ -272,16 +369,6 @@ describe("AyaraController Fork tests", function () {
         data: data,
         signature: signature,
       };
-
-      log(`Data dump`);
-      log(`Data: `);
-      log(data);
-      log(`Signature: `);
-      log(signature);
-      log(`FeeData: `);
-      log(feeData);
-      log(`Transaction: `);
-      log(transaction);
 
       const tx = await ayaraControllerDeployer.executeUserOperation(
         aliceAddress,

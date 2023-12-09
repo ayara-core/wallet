@@ -68,9 +68,10 @@ export async function generateSignatureForUninitializedWallet(
   signer: Signer,
   ayaraController: AyaraController,
   data: string,
-  overrides?: any
+  overrides?: any,
+  domainOverride?: any
 ) {
-  const domain = generateDomainData(
+  let domain = generateDomainData(
     await ayaraController.chainId(),
     await ayaraController.calculateWalletAddress(await signer.getAddress())
   );
@@ -84,6 +85,9 @@ export async function generateSignatureForUninitializedWallet(
 
   if (overrides) {
     toSignMessage = { ...toSignMessage, ...overrides };
+  }
+  if (domainOverride) {
+    domain = { ...domain, ...domainOverride };
   }
 
   return signer.signTypedData(domain, types, toSignMessage);

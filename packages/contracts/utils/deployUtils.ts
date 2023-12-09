@@ -69,6 +69,9 @@ export const deployContract = async <T extends BaseContract>(
 
   // Verify the contract on Etherscan if not local network
   if (hre.network.name !== "hardhat" && hre.network.name !== "localhost") {
+    log("Waiting 30 seconds for Etherscan to index the contract");
+    await new Promise((resolve) => setTimeout(resolve, 30000));
+    log("Done waiting");
     await hre.run("verify:verify", {
       address: await contract.getAddress(),
       constructorArguments: [...constructorArguments],

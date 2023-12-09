@@ -17,10 +17,11 @@ const log = logger("log", "test");
 // Load system configuration
 const systemConfig = getSystemConfig(hre);
 
+const DEFAULT_CHAIN_ID = 31337;
+
 // Helper functions
 
 describe("AyaraController: AyaraWalletInstance", function () {
-  const CHAIN_ID = 11155111;
   // This fixture deploys the contract and returns it
   const setup = async () => {
     // Get signers
@@ -66,7 +67,7 @@ describe("AyaraController: AyaraWalletInstance", function () {
         await ayaraController.getAddress()
       );
       expect(await walletInstance.nonce()).to.equal(0);
-      expect(await walletInstance.chainId()).to.equal(CHAIN_ID);
+      expect(await walletInstance.chainId()).to.equal(DEFAULT_CHAIN_ID);
     });
     it("Should create a new Wallet for Alice", async function () {
       const { ayaraController, alice } = await loadFixture(setup);

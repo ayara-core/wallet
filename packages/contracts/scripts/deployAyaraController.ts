@@ -68,7 +68,7 @@ export async function deployAyaraController(
   log(`Using localdeploy: ${localdeploy}`);
 
   const deploymentOverrides = {
-    gasPrice: hre.ethers.parseUnits("10.0", "gwei"),
+    gasPrice: hre.ethers.parseUnits("1", "gwei"),
   };
 
   const deployCreate2Options = {

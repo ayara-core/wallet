@@ -7,8 +7,6 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "../lib/Structs.sol";
 
-import "hardhat/console.sol";
-
 /**
  * @title AyaraSender
  * @dev This contract is responsible for sending messages to CCIP.
@@ -60,10 +58,6 @@ contract AyaraSender {
         fee = IRouterClient(router).getFee(destinationChainSelector, message);
         // Approve the router to spend the fee
         IERC20(link).approve(router, fee);
-
-        console.log("fee: %s", fee);
-        console.log("link: %s", link);
-        console.log("router: %s", router);
 
         bytes32 messageId;
 
