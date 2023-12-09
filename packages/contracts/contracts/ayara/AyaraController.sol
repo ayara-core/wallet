@@ -217,11 +217,11 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
         // Continue with the user operation, the message is not directed to this contract
         //
         // Get the recorded wallet for the message owner
-        address recordedWallet = wallets[message.owner];
-        address createdWallet;
+        address wallet = wallets[message.owner];
+
         // If no wallet is recorded, create a new one
-        if (recordedWallet == address(0))
-            createdWallet = _createWalletIfNotExists(message.owner, salt);
+        if (wallet == address(0))
+            wallet = _createWalletIfNotExists(message.owner, salt);
 
         // Set allowance for the message owner if required
         _setAllowance(message.owner, message.token, message.lockedAmount);
@@ -236,10 +236,6 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
         });
 
         // Execute the user operation on this chain
-        _executeUserOperationThisChain(
-            message.owner,
-            createdWallet,
-            transaction
-        );
+        _executeUserOperationThisChain(message.owner, wallet, transaction);
     }
 }
