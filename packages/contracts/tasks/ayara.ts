@@ -167,7 +167,8 @@ task("send:erc20:fromwallet")
       data
     );
     const feeData = {
-      token: args.tokenaddress,
+      tokenSource: args.tokenaddress,
+      tokenDestination: args.tokenaddress,
       maxFee: hre.ethers.parseEther("0"),
       relayerFee: hre.ethers.parseEther("0"),
     };
@@ -191,4 +192,100 @@ task("send:erc20:fromwallet")
     await tx.wait();
 
     log(`ERC20 sent!`);
+  });
+
+task("send:crosschain:erc20approve")
+  .addParam(
+    "destinationid",
+    "Send to destination chain id",
+    undefined,
+    types.int
+  )
+  .addParam(
+    "destinationaddress",
+    "Send to destination address",
+    undefined,
+    types.string
+  )
+  .setAction(async (args, hre) => {
+    log("send:crosschain:erc20approve");
+
+    const deployer = await hre.ethers.provider.getSigner();
+
+    const ayaraControllerAddress = await getDeployedAddress(
+      hre,
+      "AyaraController"
+    );
+
+    const ayaraController = await hre.ethers.getContractAt(
+      "AyaraController",
+      ayaraControllerAddress,
+      deployer
+    );
+
+    const walletAddress = await ayaraController.wallets(
+      await deployer.getAddress()
+    );
+
+    const walletInstance = await hre.ethers.getContractAt(
+      "AyaraWalletInstance",
+      walletAddress,
+      deployer
+    );
+
+    // Get interface
+    const erc20 = await hre.ethers.getContractAt(
+      "ERC20",
+      args.destinationaddress,
+      deployer
+    );
+
+    const data = erc20.interface.encodeFunctionData("approve", [
+      "0x6D0F8D488B669aa9BA2D0f0b7B75a88bf5051CD3",
+      hre.ethers.parseEther("1"),
+    ]);
+
+    const signature = await generateSignature(
+      hre,
+      deployer,
+      walletInstance,
+      data
+    );
+
+    const linkTokenAddress = await ayaraController.link();
+
+    const feeData = {
+      tokenSource: linkTokenAddress,
+      tokenDestination: "0x6D0F8D488B669aa9BA2D0f0b7B75a88bf5051CD3",
+      maxFee: hre.ethers.parseEther("1"),
+      relayerFee: hre.ethers.parseEther("0"),
+    };
+
+    const transaction = {
+      destinationChainId: args.destinationid,
+      to: args.destinationaddress,
+      value: 0,
+      data: data,
+      signature: signature,
+    };
+
+    log(`Approving ${args.destinationaddress} on ${args.destinationid}`);
+    const transactionData = ayaraController.interface.encodeFunctionData(
+      "executeUserOperation",
+      [await deployer.getAddress(), walletAddress, feeData, transaction]
+    );
+
+    log(`Transaction data: `);
+    log(transactionData);
+    const tx = await ayaraController.executeUserOperation(
+      await deployer.getAddress(),
+      walletAddress,
+      feeData,
+      transaction
+    );
+
+    log(`Transaction hash: ${tx.hash}`);
+    await tx.wait();
+
+    log(`ERC20 approve message sent!`);
   });

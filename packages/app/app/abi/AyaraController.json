@@ -733,7 +733,11 @@
         "components": [
           {
             "type": "address",
-            "name": "token"
+            "name": "tokenSource"
+          },
+          {
+            "type": "address",
+            "name": "tokenDestination"
           },
           {
             "type": "uint256",

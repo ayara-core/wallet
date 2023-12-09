@@ -182,13 +182,13 @@ contract AyaraController is AyaraGasBank, AyaraWalletManager {
             _executeUserOperationThisChain(owner_, wallet_, transaction_);
         } else {
             // lock gas first on source chain, then execute on another chain
-            uint256 lockedAmount = _lockGas(owner_, feeData_.token);
+            uint256 lockedAmount = _lockGas(owner_, feeData_.tokenSource);
             // execute on another chain, passing the locked amount as allowance
             uint256 crossChainFee = _executeUserOperationOtherChain(
                 owner_,
                 wallet_,
                 transaction_,
-                feeData_.token,
+                feeData_.tokenDestination,
                 lockedAmount
             );
 

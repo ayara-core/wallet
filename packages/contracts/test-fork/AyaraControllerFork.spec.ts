@@ -187,10 +187,16 @@ describe("AyaraController Fork tests", function () {
         ethers.parseEther("1"),
       ]);
 
-      const signature = await generateSignature(alice, walletInstance, data);
+      const signature = await generateSignature(
+        hre,
+        alice,
+        walletInstance,
+        data
+      );
 
       const feeData = {
-        token: linkTokenAddress,
+        tokenSource: linkTokenAddress,
+        tokenDestination: linkTokenAddress,
         maxFee: ethers.parseEther("0.01"),
         relayerFee: ethers.parseEther("0.01"),
       };
@@ -245,10 +251,16 @@ describe("AyaraController Fork tests", function () {
         ethers.parseEther("1"),
       ]);
       // Same for the signature
-      const signature = await generateSignature(alice, walletInstance, data);
+      const signature = await generateSignature(
+        hre,
+        alice,
+        walletInstance,
+        data
+      );
 
       const feeData = {
-        token: linkTokenAddress,
+        tokenSource: linkTokenAddress,
+        tokenDestination: linkTokenAddress,
         maxFee: ethers.parseEther("1"),
         relayerFee: ethers.parseEther("0.01"),
       };
@@ -260,6 +272,16 @@ describe("AyaraController Fork tests", function () {
         data: data,
         signature: signature,
       };
+
+      log(`Data dump`);
+      log(`Data: `);
+      log(data);
+      log(`Signature: `);
+      log(signature);
+      log(`FeeData: `);
+      log(feeData);
+      log(`Transaction: `);
+      log(transaction);
 
       const tx = await ayaraControllerDeployer.executeUserOperation(
         aliceAddress,

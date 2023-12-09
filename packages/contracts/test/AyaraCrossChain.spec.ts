@@ -182,6 +182,7 @@ describe("AyaraController", function () {
         100,
       ]);
       const signature = await generateSignatureForUninitializedWallet(
+        hre,
         alice,
         ayaraControllerOptimism,
         data
@@ -203,7 +204,8 @@ describe("AyaraController", function () {
 
       // Send the transaction
       const feeData = {
-        token: tokenAddress, // Fee Token
+        tokenSource: tokenAddress, // Fee Token
+        tokenDestination: tokenAddress, // Fee Token
         maxFee: ethers.parseEther("1"), // Fee Amount
         relayerFee: 0, // Relayer Fee
       };
@@ -366,13 +368,15 @@ describe("AyaraController", function () {
       ]);
 
       const signature = await generateSignature(
+        hre,
         alice,
         ayaraWalletInstance,
         data
       );
 
       const feeData = {
-        token: tokenAddress, // Fee Token
+        tokenSource: tokenAddress, // Fee Token
+        tokenDestination: tokenAddress, // Fee Token
         maxFee: 1000, // Fee Amount
         relayerFee: 100, // Relayer Fee
       };
@@ -434,13 +438,15 @@ describe("AyaraController", function () {
       ]);
 
       const signature = await generateSignatureForUninitializedWallet(
+        hre,
         alice,
         ayaraControllerOptimism,
         data
       );
 
       const feeData = {
-        token: tokenAddress, // Fee Token
+        tokenSource: tokenAddress, // Fee Token
+        tokenDestination: tokenAddress, // Fee Token
         maxFee: 1000, // Fee Amount
         relayerFee: 100, // Relayer Fee
       };
@@ -499,13 +505,15 @@ describe("AyaraController", function () {
       ]);
 
       const signature = await generateSignature(
+        hre,
         alice,
         walletInstanceOptimism,
         data
       );
 
       const feeData = {
-        token: tokenAddress, // Fee Token
+        tokenSource: tokenAddress, // Fee Token
+        tokenDestination: tokenAddress, // Fee Token
         maxFee: 1000, // Fee Amount
         relayerFee: 100, // Relayer Fee
       };

@@ -29,7 +29,7 @@ describe("AyaraController: AyaraWalletInstance", function () {
     const {
       ayaraControllerPrimary: ayaraController,
       mocks: { erc20Mock } = {},
-    } = await deploySystem(hre, deployer, true);
+    } = await deploySystem(hre, deployer, { unitTest: true });
     if (!erc20Mock) {
       throw new Error("ERC20Mock not deployed");
     }
@@ -298,6 +298,7 @@ describe("AyaraController: AyaraWalletInstance", function () {
       ]);
 
       const signature = await generateSignature(
+        hre,
         alice,
         ayaraWalletInstanceAlice,
         data
@@ -348,6 +349,7 @@ describe("AyaraController: AyaraWalletInstance", function () {
       ]);
 
       const signature = await generateSignature(
+        hre,
         relayer,
         ayaraWalletInstanceAlice,
         data
@@ -403,6 +405,7 @@ describe("AyaraController: AyaraWalletInstance", function () {
       const nonce = await ayaraWalletInstanceAlice.nonce();
 
       const signature = await generateSignature(
+        hre,
         alice,
         ayaraWalletInstanceAlice,
         data,
@@ -458,6 +461,7 @@ describe("AyaraController: AyaraWalletInstance", function () {
 
       // Send a transaction so that the nonce is incremented
       const signature = await generateSignature(
+        hre,
         alice,
         ayaraWalletInstanceAlice,
         data
@@ -480,6 +484,7 @@ describe("AyaraController: AyaraWalletInstance", function () {
       expect(nonce2).to.equal(1n);
 
       const signature2 = await generateSignature(
+        hre,
         alice,
         ayaraWalletInstanceAlice,
         data,

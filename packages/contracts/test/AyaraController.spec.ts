@@ -323,13 +323,19 @@ describe("AyaraController", function () {
         ethers.parseEther("100"),
       ]);
 
-      const signature = await generateSignature(alice, walletInstance, data);
+      const signature = await generateSignature(
+        hre,
+        alice,
+        walletInstance,
+        data
+      );
 
       // Send a tx via the wallet, which should update the gas usage
       const ayaraControllerInstanceRelayer = ayaraController.connect(deployer);
 
       const feeData = {
-        token: await erc20Mock.getAddress(),
+        tokenSource: await erc20Mock.getAddress(),
+        tokenDestination: await erc20Mock.getAddress(),
         maxFee: ethers.parseEther("1"),
         relayerFee: 1,
       };
