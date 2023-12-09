@@ -1,9 +1,43 @@
 import { subtask, task, types } from "hardhat/config";
-import { generateSignature } from "../utils/signature";
+import {
+  generateSignature,
+  generateSignatureForUninitializedWallet,
+} from "../utils/signature";
 
 import { logger } from "../utils/deployUtils";
 import { getDeployedAddress } from "../utils/saveAddress";
 const log = logger("log", "task");
+
+task("createwallet:ayara", "Just creates a wallet").setAction(
+  async (args, hre) => {
+    log("createwallet:ayara");
+
+    const deployer = await hre.ethers.provider.getSigner();
+    const ayaraControllerAddress = await getDeployedAddress(
+      hre,
+      "AyaraController"
+    );
+    const ayaraController = await hre.ethers.getContractAt(
+      "AyaraController",
+      ayaraControllerAddress,
+      deployer
+    );
+
+    const walletAddress = await ayaraController.calculateWalletAddress(
+      await deployer.getAddress()
+    );
+    log(`Wallet address should be: ${walletAddress}`);
+
+    const tx = await ayaraController.createWallet(
+      await deployer.getAddress(),
+      []
+    );
+    log(`Transaction hash: ${tx.hash}`);
+    await tx.wait();
+
+    log(`Wallet created!`);
+  }
+);
 
 task(
   "initiate:ayara",
