@@ -37,6 +37,17 @@ The smart contracts are written in Solidity and tested using Hardhat. The contra
 
 Ayara Controller is deployed with the same address on all networks. This is important for the creation of Ayara Instances on other networks, since it will create the same address for the same user across all networks.
 
+The contracts are using Chainlink's CCIP to send messages across networks to other AyaraController contracts.
+In one transaction it can:
+
+- Lock some Link tokens in the wallet
+- Send a message to another network
+- Create a new smart contract wallet on the target network
+- Set an allowance for the user to spend on the target network
+- Execute the smart contract call on the target network
+
+More details about interactions and tests can be found in the [contracts README](./packages/contracts/README.md).
+
 ![Inheritance diagram](./packages/contracts/docs/inheritance-simple.png)
 
 ### The key contracts are:
