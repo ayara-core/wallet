@@ -1,3 +1,5 @@
+![Ayara Thumbnail](./ayara.png)
+
 # Ayara Wallet
 
 > Developed for Chainlink Hackathon 2023
