@@ -22,7 +22,7 @@ AyaraController is deployed with the same address on all networks. This is impor
 Example of a successful cross-chain transaction (including wallet creation):
 https://ccip.chain.link/msg/0xc11b3b108475923f383708eeac65d2936aba52430e082ff15fc54275f81f6acf
 
-![Inheritance diagram](./packages/contracts/docs/inheritance-simple.png)
+![Inheritance diagram](./docs/inheritance-simple.png)
 
 ## The key contracts are:
 
