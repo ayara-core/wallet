@@ -46,6 +46,10 @@ https://ccip.chain.link/msg/0xc11b3b108475923f383708eeac65d2936aba52430e082ff15f
 - `CCIPRouterMock.sol`: Mock CCIP router used for testing, imitates the CCIP router and allows to test cross-chain transactions on a local network on the same chain.
 - `MockERC20.sol`: Mock ERC20 token used for testing.
 
+## Complete Inheritance Diagram
+
+![Inheritance diagram](./docs/contracts.svg)
+
 ## Setup
 
 Change directory to the contracts folder:
