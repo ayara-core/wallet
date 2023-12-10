@@ -40,9 +40,12 @@ export const saveAddress = async (
 
 export const getDeployedAddress = async (
   hre: HardhatRuntimeEnvironment,
-  name: string
+  name: string,
+  overrides?: {
+    chainId?: number;
+  }
 ) => {
-  const chainId = hre.network.config.chainId ?? 31337;
+  const chainId = overrides?.chainId ?? hre.network.config.chainId ?? 31337;
   const addressesFile = "../app/app/abi/addresses.json";
   let currentContent = "{}";
   try {
