@@ -37,8 +37,6 @@ The project is split into 2 packages:
 
 The smart contracts are written in Solidity and tested using Hardhat. The contracts are deployed on Optimism Goerli, Base Goerli and Sepolia testnets.
 
-Ayara Controller is deployed with the same address on all networks. This is important for the creation of Ayara Instances on other networks, since it will create the same address for the same user across all networks.
-
 The contracts are using Chainlink's CCIP to send messages across networks to other AyaraController contracts.
 In one transaction it can:
 
@@ -47,6 +45,17 @@ In one transaction it can:
 - Create a new smart contract wallet on the target network
 - Set an allowance for the user to spend on the target network
 - Execute the smart contract call on the target network
+
+### Deployed contracts
+
+AyaraController is deployed with the same address on all networks. This is important for the creation of Ayara Instances on other networks, since it will create the same address for the same user across all networks.
+
+- Optimism Goerli: [0xb7b6d3b50Bb0256eF6eE484fe535d95A6b879176](https://goerli-optimism.etherscan.io/address/0xb7b6d3b50Bb0256eF6eE484fe535d95A6b879176)
+- Base Goerli: [0xb7b6d3b50Bb0256eF6eE484fe535d95A6b879176](https://goerli.basescan.org/address/0xb7b6d3b50bb0256ef6ee484fe535d95a6b879176)
+- Sepolia: [0xb7b6d3b50Bb0256eF6eE484fe535d95A6b879176](https://sepolia.etherscan.io/address/0xb7b6d3b50bb0256ef6ee484fe535d95a6b879176)
+
+Example of a successful cross-chain transaction (including wallet creation):
+https://ccip.chain.link/msg/0xc11b3b108475923f383708eeac65d2936aba52430e082ff15fc54275f81f6acf
 
 More details about interactions and tests can be found in the [contracts README](./packages/contracts/README.md).
 
