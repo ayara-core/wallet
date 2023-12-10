@@ -1,4 +1,6 @@
-![Ayara Thumbnail](./ayara.png)
+<p align="center" width="100%">
+    <img width="33%" src="https://raw.githubusercontent.com/ayara-core/wallet/main/ayara.png"> 
+</p>
 
 # Ayara Wallet
 
