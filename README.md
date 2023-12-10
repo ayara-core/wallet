@@ -58,27 +58,3 @@ Example of a successful cross-chain transaction (including wallet creation):
 https://ccip.chain.link/msg/0xc11b3b108475923f383708eeac65d2936aba52430e082ff15fc54275f81f6acf
 
 More details about interactions and tests can be found in the [contracts README](./packages/contracts/README.md).
-
-![Inheritance diagram](./packages/contracts/docs/inheritance-simple.png)
-
-### The key contracts are:
-
-- `AyaraController.sol`: The main contract that manages the wallet. Entry point for all transactions.
-  - `AyaraGasBank.sol`: Contract that manages the gas tokens and logic around allowances and gas usage.
-  - `AyaraMessageHandler.sol`: Contract that manages the cross-chain transactions.
-    - `AyaraReceiver.sol`: Decoding of the message sent from the source network.
-    - `AyaraSender.sol`: Encoding and sending of the message to the target network.
-  - `AyaraWalletManager.sol`: Contract that manages the creation of Ayara Instances.
-- `AyaraInstance.sol`: The smart contract wallet account. It is created on the target network when a cross-chain transaction is initiated.
-
-### Other contracts in lib/:
-
-- `Create2Factory.sol`: Contract that creates a new smart contract wallet with a deterministic address.
-- `PriceConver.sol`: Contract that converts Link tokens to ETH and vice versa. Relayer can use this to determine the amount of Link tokens to charge for a transaction.
-- `SignatureValidator.sol`: Contract that validates the signature of the user.
-- `Structs.sol`: Contract that defines the structs used in the contracts.
-
-### Mocks used for testing:
-
-- `CCIPRouterMock.sol`: Mock CCIP router used for testing, imitates the CCIP router and allows to test cross-chain transactions on a local network on the same chain.
-- `MockERC20.sol`: Mock ERC20 token used for testing.
