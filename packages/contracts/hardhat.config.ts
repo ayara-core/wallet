@@ -24,9 +24,9 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       chainId: 31337,
-      accounts: {
-        mnemonic: process.env.MNEMONIC,
-      },
+      // accounts: {
+      //   mnemonic: process.env.MNEMONIC,
+      // },
     },
     optimismGoerli: {
       url: process.env.NODE_URL_OPTIMISM || "",

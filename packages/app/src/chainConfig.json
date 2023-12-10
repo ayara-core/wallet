@@ -1,0 +1,34 @@
+[
+    {
+        "chainId": "0x7A69",
+        "rpcTarget": "http://127.0.0.1:8545",
+        "displayName": "Local Hardhat",
+        "blockExplorer": "https://optimistic.etherscan.io",
+        "ticker": "ETH",
+        "tickerName": "Ethereum"
+    },
+    {
+        "chainId": "0xa869",
+        "rpcTarget": "https://avalanche-fuji-c-chain.publicnode.com",
+        "displayName": "Avalanche Fuji",
+        "blockExplorer": "https://optimistic.etherscan.io",
+        "ticker": "ETH",
+        "tickerName": "Ethereum"
+    },
+    {
+        "chainId": "0xaa36a7",
+        "rpcTarget": "https://1rpc.io/sepolia",
+        "displayName": "Sepolia",
+        "blockExplorer": "https://optimistic.etherscan.io",
+        "ticker": "ETH",
+        "tickerName": "Ethereum"
+    },
+    {
+        "chainId": "0x1a4",
+        "rpcTarget": "https://optimism-goerli.publicnode.com",
+        "displayName": "Optimism Goerli",
+        "blockExplorer": "https://optimistic.etherscan.io",
+        "ticker": "ETH",
+        "tickerName": "Ethereum"
+    }
+]

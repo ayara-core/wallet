@@ -16,3 +16,11 @@ code {
     monospace;
 }
 
+.container {
+	width: 357px;
+	height: 600px;
+	min-width: 357px;
+	max-width: 357px;
+	min-height: 600px;
+	margin: auto;
+}

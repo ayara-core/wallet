@@ -1,4 +1,4 @@
-import "./deploy";
-import "./wallet";
-import "./ayara";
-import "./tenderly";
+import "./deploy"
+import "./wallet"
+import "./ayara"
+import "./tenderly"
