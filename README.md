@@ -1,5 +1,5 @@
 <p align="center" width="100%">
-    <img width="33%" src="https://raw.githubusercontent.com/ayara-core/wallet/main/ayara.png"> 
+    <img width="100%" src="https://raw.githubusercontent.com/ayara-core/wallet/main/ayara_logo.png"> 
 </p>
 
 # Ayara Wallet
