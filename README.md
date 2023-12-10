@@ -19,10 +19,10 @@ The user can then execute transactions on the target network. To unlock the Link
 ## Features
 
 - Chrome extension wallet
-- Creates a new EOA wallet with Google sign-in (we use web3auth as a signer), this is the owner of the smart contract wallet.
-- Create a smart contract wallet account.
-- Lock LINK in the contract (we call it "universal gas tank").
-- We use CCIP to create a smart contract wallet account in another chain.
+- Creates a new EOA wallet with Google sign-in (web3auth is used as a signer), which becomes the owner of the smart contract wallet.
+- Facilitates the creation of a smart contract wallet account.
+- Allows locking of LINK in the contract, referred to as the "universal gas tank".
+- Utilizes CCIP to create a smart contract wallet account on a different chain and execute a transaction on that chain.
 
 ## Project Structure
 
